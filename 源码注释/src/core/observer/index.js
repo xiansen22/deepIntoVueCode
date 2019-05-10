@@ -29,10 +29,10 @@ export function toggleObserving (value: boolean) {
 }
 
 /**
- * Observer class that is attached to each observed
- * object. Once attached, the observer converts the target
- * object's property keys into getter/setters that
- * collect dependencies and dispatch updates.
+ * Observer 会被附加到每一个被侦测的对象上。
+ * 一旦被附加上，Observer 会将 Object 的所有属性转换为 getter 和setter 的形式
+ * 来收集依赖，并且在属性发生变化时通知这些依赖。
+ * 
  */
 export class Observer {
   value: any;
@@ -41,15 +41,20 @@ export class Observer {
 
   constructor (value: any) {
     this.value = value
+    //
     this.dep = new Dep()
     this.vmCount = 0
-    def(value, '__ob__', this)                  //将 当前 Observer 实例赋给对象的 __ob__ 属性
+    /**
+     * 将 当前 Observer 实例赋给对象的 __ob__ 属性
+     * 目的：为了在重写的数组中访问到 Observer 实例，到达访问 dep 触发依赖收集更新的目的。
+     */
+    def(value, '__ob__', this)                  
 
     if (Array.isArray(value)) {                 //处理数组
       if (hasProto) {                           //检查对象是否有 __proto__ 属性 
-        protoAugment(value, arrayMethods)       //
+        protoAugment(value, arrayMethods)       //如果有 __proto__ 属性，则重写 arrayMethods 里面的方法
       } else {
-        copyAugment(value, arrayMethods, arrayKeys)
+        copyAugment(value, arrayMethods, arrayKeys) //如果没有则直接把 arrayMethods 的方法写在 value 上，这样就不可以不请求数组原型上相关的方法
       }
       this.observeArray(value)
     } else {
@@ -70,7 +75,7 @@ export class Observer {
   }
 
   /**
-   * Observe a list of Array items.
+   * 对数组中的数据进行进一步的数据侦测。
    */
   observeArray (items: Array<any>) {
     for (let i = 0, l = items.length; i < l; i++) {
@@ -79,11 +84,15 @@ export class Observer {
   }
 }
 
-// helpers
+/**
+ * 下面是一些辅助函数
+ * helpers
+ */
 
 /**
  * Augment a target Object or Array by intercepting
  * the prototype chain using __proto__
+ * 使用 __proto__ 对数组原型进行重写，主要为了对数组实现侦测
  */
 function protoAugment (target, src: Object) {
   /* eslint-disable no-proto */
@@ -94,6 +103,8 @@ function protoAugment (target, src: Object) {
 /**
  * Augment a target Object or Array by defining
  * hidden properties.
+ * 无法通过 __proto__ 访问到数组的原型，那么通过较为直接的方法将修改后数组原型附加在数组上，
+ * 在原型链上拦截了对数组原型相关方法的访问
  */
 /* istanbul ignore next */
 function copyAugment (target: Object, src: Object, keys: Array<string>) {
@@ -104,9 +115,12 @@ function copyAugment (target: Object, src: Object, keys: Array<string>) {
 }
 
 /**
- * Attempt to create an observer instance for a value,
- * returns the new observer if successfully observed,
- * or the existing observer if the value already has one.
+ * 尝试为 value 创建一个 Observer 实例
+ * 目的是为了对 value 进行数据侦测
+ * 如果创建成功则立刻返回新创建的 Observer 实例,
+ * 如果 value 已经存在 Observer 实例，则直接返回它.
+ * 
+ * value 如果不是 Object 或者是 VNode 的实例，则返回undefined
  */
 export function observe (value: any, asRootData: ?boolean): Observer | void {
 

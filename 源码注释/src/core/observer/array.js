@@ -37,7 +37,7 @@ methodsToPatch.forEach(function (method) {
     // this.__ob__ 是 Observer 实例，在 new Observer 的时候，Observer 会将实例添加到 __ob__ 属性上
     const ob = this.__ob__
     
-    //定义新添加的数据变量
+    //定义新添加的数据
     let inserted 
     
     /**
@@ -53,8 +53,9 @@ methodsToPatch.forEach(function (method) {
         inserted = args.slice(2)
         break
     }
+    //对新增加的数据添加侦测
     if (inserted) ob.observeArray(inserted)
-    // notify change
+    //数组发生改变，通知更新
     ob.dep.notify()
     return result
   })
