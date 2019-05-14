@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+</head>
+<body>
+    <div id="main">
+        <div v-for="(item, index) in list" :key="index">
+            <div style="background: #000;color: #fff" :data-index="index" @click="handleClick">
+                <span>姓名：{{item.name}}</span>
+                <span>年龄：{{item.age}}</span>
+            </div>
+            <div>{{listNumber[0]}}</div>
+            <div v-for="(item, index) in listNumber" :key = "index">
+                {{item}}
+            </div>
+        </div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+    <script>
+        var vm = new Vue({
+            el: "#main",
+            data: {
+                list: [{
+                    name: "hy",
+                    age: 11
+                }],
+                listNumber: [1,2,3,4,5]
+            },
+            methods: {
+                handleClick: function(e){
+                    var target = e.target;
+                    var index = target.getAttribute("data-index");
+                    var item = this.list[index];
+                    this.listNumber[7] = 3;
+                    
+                    if(typeof item === "object"){
+                        this.list[index].name = "hello hy";
+                         
+                    }else{
+                        this.list[index] = {
+                            name: "aa"
+                        }
+                    }
+                }
+            }
+        })
+    </script>
+</body>
+</html>
