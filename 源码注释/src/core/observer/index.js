@@ -41,7 +41,7 @@ export class Observer {
 
   constructor(value: any) {
     this.value = value;
-    //这个依赖收集 dep 是为数组侦测提供，以便在重写的数组方法中访问
+    //将子属性为Object 和 Array类型的依赖管理保存在 Obseerver 实例的 dep 属性上
     this.dep = new Dep();
     this.vmCount = 0;
     /**
@@ -126,6 +126,8 @@ function copyAugment(target: Object, src: Object, keys: Array<string>) {
  * 如果 value 已经存在 Observer 实例，则直接返回它.
  *
  * value 如果不是 Object 或者是 VNode 的实例，则返回undefined
+ * 
+ * 主要用于迭代为属性值为 Object 或 Array 类型的值进行侦测
  */
 export function observe(value: any, asRootData: ?boolean): Observer | void {
   if (!isObject(value) || value instanceof VNode) {
@@ -134,23 +136,23 @@ export function observe(value: any, asRootData: ?boolean): Observer | void {
 
   let ob: Observer | void;
 
-  if (hasOwn(value, "__ob__") && value.__ob__ instanceof Observer) {
+  if (hasOwn(value, "__ob__") && value.__ob__ instanceof Observer) {    //如果本身就有 __ob__ 属性，并且是 Observer 的实例则返回value.__ob__
     ob = value.__ob__;
-  } else if (
+  } else if (             //可以观察并且不是服务器渲染，值为数组或者是纯对象 并且值可扩展，并且_isVue 为假
     shouldObserve &&
     !isServerRendering() &&
     (Array.isArray(value) || isPlainObject(value)) &&
     Object.isExtensible(value) &&
     !value._isVue
   ) {
-    ob = new Observer(value);
+    ob = new Observer(value);   //对值进行侦测
   }
 
   if (asRootData && ob) {
     ob.vmCount++;
   }
 
-  return ob;
+  return ob;  //将ob返回
 }
 
 /**
@@ -164,6 +166,7 @@ export function defineReactive(
   customSetter?: ?Function,
   shallow?: boolean
 ) {
+  //为该属性创建依赖管理
   const dep = new Dep();
   //获取该属性在该对象上的描述属性
   const property = Object.getOwnPropertyDescriptor(obj, key);
@@ -175,30 +178,35 @@ export function defineReactive(
   // cater for pre-defined getter/setters  获取属性之前定义过的getter/setter
   const getter = property && property.get;
   const setter = property && property.set;
-  //r如果没有定义get方法、到那时又set方法，并且参数为两个，获取属性对应的值
+  //如果没有定义get方法、或者定义了set方法，并且参数为两个，获取属性对应的值
   if ((!getter || setter) && arguments.length === 2) {
     val = obj[key];
   }
-
+  //shallow为false,对属性值进行侦测，这里主要是实现对子属性的迭代侦测
   let childOb = !shallow && observe(val);
+  //开始对属性进行侦测
   Object.defineProperty(obj, key, {
     enumerable: true,
     configurable: true,
     get: function reactiveGetter() {
+      //如果属性定义了get方法，使用属性的get方法获取属性对应的值，否则使用 obj[key]
       const value = getter ? getter.call(obj) : val;
       //如果存在依赖，收集依赖
       if (Dep.target) {
-        dep.depend();   //收集依赖
-        if (childOb) {
-          childOb.dep.depend();
-          if (Array.isArray(value)) {
+        dep.depend();   //在此收集依赖
+
+        if (childOb) {  //childOb 存在有两种情况，value为 Object 类型 或 Array 类型
+          childOb.dep.depend(); //同时用 Observer 实例的dep属性收集依赖，供 Array和Object 使用 子属性的值发生变化也归属于父属性的侦测范围
+          
+          if (Array.isArray(value)) {//如果 Value 是一个数组，需要对数组中的每一项进行依赖的收集
             dependArray(value);
           }
         }
-      }
+      } 
       return value;
     },
     set: function reactiveSetter(newVal) {
+      //先获取属性的值
       const value = getter ? getter.call(obj) : val;
       /* eslint-disable no-self-compare */
       if (newVal === value || (newVal !== newVal && value !== value)) {
@@ -209,13 +217,17 @@ export function defineReactive(
         customSetter();
       }
       // #7981: for accessor properties without setter
+      //对于只有 getter没有 setter的属性不进行下一步操作
       if (getter && !setter) return;
-      if (setter) {
+  
+      if (setter) {      //存在 setter 调用setter自行设置
         setter.call(obj, newVal);
-      } else {
+      } else {            //否则手动设置
         val = newVal;
       }
+      //对新设置的值进行侦测
       childOb = !shallow && observe(newVal);
+      //触发依赖
       dep.notify();
     }
   });
@@ -302,8 +314,11 @@ export function del(target: Array<any> | Object, key: any) {
  * we cannot intercept array element access like property getters.
  */
 function dependArray(value: Array<any>) {
+  //遍历数组
   for (let e, i = 0, l = value.length; i < l; i++) {
-    e = value[i];
+    //拿到数组中的每一项值
+    e = value[i];  
+    //值存在且值上有 __ob__ 属性，添加依赖
     e && e.__ob__ && e.__ob__.dep.depend();
     if (Array.isArray(e)) {
       dependArray(e);

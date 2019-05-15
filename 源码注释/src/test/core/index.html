@@ -17,6 +17,7 @@
             <div v-for="(item, index) in listNumber" :key = "index">
                 {{item}}
             </div>
+            <div>{{info.home.title}}</div>
         </div>
     </div>
     <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
@@ -28,23 +29,30 @@
                     name: "hy",
                     age: 11
                 }],
-                listNumber: [1,2,3,4,5]
+                listNumber: [1,2,3,4,5],
+                info: {
+                    name: "hj",
+                    home: {
+                        title: "唐山"
+                    }
+                }
             },
             methods: {
                 handleClick: function(e){
                     var target = e.target;
                     var index = target.getAttribute("data-index");
                     var item = this.list[index];
-                    this.listNumber[7] = 3;
+                    // this.listNumber[7] = 3;
                     
-                    if(typeof item === "object"){
-                        this.list[index].name = "hello hy";
+                    // if(typeof item === "object"){
+                    //     this.list[index].name = "hello hy";
                          
-                    }else{
-                        this.list[index] = {
-                            name: "aa"
-                        }
-                    }
+                    // }else{
+                    //     this.list[index] = {
+                    //         name: "aa"
+                    //     }
+                    // }
+                    this.info.home.title = "邢台"
                 }
             }
         })
