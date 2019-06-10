@@ -22,7 +22,7 @@
             <div id="children_b"></div>
         </div>
     </div>
-    <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vue"></script>
     <script>
         var Profile = Vue.extend({
                 props: {
@@ -64,38 +64,14 @@
         var vm = new Vue({
             el: "#main",
             data: {
-                list: [{
-                    name: "hy",
-                    age: 11
-                }],
-                listNumber: [1,2,3,4,5],
-                info: {
-                    name: "hj",
-                    home: {
-                        title: "唐山"
-                    }
-                }
+                list: [1,2,3]
             },
             components: {
                 "children-a": childrenA
             },
             methods: {
-                handleClick: function(e){
-                    var target = e.target;
-                    var index = target.getAttribute("data-index");
-                    var item = this.list[index];
-                    // this.listNumber[7] = 3;
-                    
-                    // if(typeof item === "object"){
-                    //     this.list[index].name = "hello hy";
-                         
-                    // }else{
-                    //     this.list[index] = {
-                    //         name: "aa"
-                    //     }
-                    // }
-                    this.info.home.title = "邢台"
-                }
+                handleClick: function(){
+                    this.list = this.list.concat([2,3,54]);
             }
         })
     </script>
