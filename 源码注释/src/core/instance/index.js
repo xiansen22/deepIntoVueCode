@@ -14,7 +14,7 @@ function Vue (options) {
   this._init(options)
 }
 
-initMixin(Vue)
+initMixin(Vue)      //主要是在Vue.prototype 上挂载了 _init函数
 stateMixin(Vue)
 eventsMixin(Vue)
 lifecycleMixin(Vue)

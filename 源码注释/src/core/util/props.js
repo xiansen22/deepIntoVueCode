@@ -17,22 +17,33 @@ type PropOptions = {
   required: ?boolean,
   validator: ?Function
 };
-
+/**
+ * @key props 键名
+ * @propOptions props
+ * @propsData propsData
+ * @vm Vue实例
+ */
 export function validateProp (
   key: string,
   propOptions: Object,
   propsData: Object,
   vm?: Component
 ): any {
+  //拿到键名对应的 prop
   const prop = propOptions[key]
+  //propsData 里面是否含有此键
   const absent = !hasOwn(propsData, key)
+  // 拿到 propsData 中对应的值
   let value = propsData[key]
+
   // boolean casting
+
+  // 处理 prop 类型为 布尔值的情况 start
   const booleanIndex = getTypeIndex(Boolean, prop.type)
-  if (booleanIndex > -1) {
-    if (absent && !hasOwn(prop, 'default')) {
+  if (booleanIndex > -1) {  // prop 类型为 布尔值
+    if (absent && !hasOwn(prop, 'default')) { // propsData 中没有该 prop ，并且 prop 也没有定义 default 函数，那么value 初始化为 false
       value = false
-    } else if (value === '' || value === hyphenate(key)) {
+    } else if (value === '' || value === hyphenate(key)) {  // propsData 中有该值，且为空字符串 或者 propsData中对应的 value 与 key 都为 boolean
       // only cast empty string / same name to boolean if
       // boolean has higher priority
       const stringIndex = getTypeIndex(String, prop.type)
@@ -41,7 +52,10 @@ export function validateProp (
       }
     }
   }
+  // 处理 prop 类型为 布尔值的情况 end
+
   // check default value
+  // propsData 中没有该键，从 props 中取
   if (value === undefined) {
     value = getPropDefaultValue(vm, prop, key)
     // since the default value is a fresh copy,
@@ -51,6 +65,7 @@ export function validateProp (
     observe(value)
     toggleObserving(prevShouldObserve)
   }
+  
   if (
     process.env.NODE_ENV !== 'production' &&
     // skip validation for weex recycle-list child component props
@@ -66,9 +81,11 @@ export function validateProp (
  */
 function getPropDefaultValue (vm: ?Component, prop: PropOptions, key: string): any {
   // no default, return undefined
+  // 没有设置默认值，返回 undefined
   if (!hasOwn(prop, 'default')) {
     return undefined
   }
+  // default 对应的是函数，拿到默认的值函数
   const def = prop.default
   // warn against non-factory defaults for Object & Array
   if (process.env.NODE_ENV !== 'production' && isObject(def)) {

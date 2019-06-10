@@ -34,7 +34,9 @@ const sharedPropertyDefinition = {
   get: noop,
   set: noop
 }
-
+/**
+ * @target 
+ */
 export function proxy (target: Object, sourceKey: string, key: string) {
   sharedPropertyDefinition.get = function proxyGetter () {
     return this[sourceKey][key]
@@ -46,34 +48,51 @@ export function proxy (target: Object, sourceKey: string, key: string) {
 }
 
 export function initState (vm: Component) {
+  //定义实例上所有的watcher存放位置
   vm._watchers = []
   const opts = vm.$options
+  //如果存在props，则初始化 prosp
   if (opts.props) initProps(vm, opts.props)
+  //如果存在 methods，则初始化 methods
   if (opts.methods) initMethods(vm, opts.methods)
-  if (opts.data) {
+  //初始化数据、开始对数据进行侦测
+  if (opts.data) {    //如果我们定义了data属性，那么开始初始化data,主要是做数据侦测
     initData(vm)
-  } else {
+  } else {    //如果没有定义data属性，那么再实例上初始化_data属性，并进行侦测
     observe(vm._data = {}, true /* asRootData */)
   }
+  //初始化计算属性
   if (opts.computed) initComputed(vm, opts.computed)
+  //初始化观察属性
   if (opts.watch && opts.watch !== nativeWatch) {
     initWatch(vm, opts.watch)
   }
 }
-
+/**
+ * @vm 组件实例
+ * @propsOptions props 可以是数组或对象，用于接收来自父组件的数据
+ */
 function initProps (vm: Component, propsOptions: Object) {
+  // propsData 只用于 new 创建的实例中。用在全局扩展时进行传递数据
   const propsData = vm.$options.propsData || {}
   const props = vm._props = {}
   // cache prop keys so that future props updates can iterate using Array
   // instead of dynamic object key enumeration.
+  // 缓存 props 的键值，同时将这些键值保存在实例 _propKeys 属性上，以便后期 props 更新时可以用数组去迭代
   const keys = vm.$options._propKeys = []
-  const isRoot = !vm.$parent
+  // 是否为根节点（没有父级就是根节点）
+  const isRoot = !vm.$parent 
+
   // root instance props should be converted
+  // 根实例 props 应该被侦测 ？？？
   if (!isRoot) {
     toggleObserving(false)
   }
+  // 开始遍历 props
   for (const key in propsOptions) {
+    // 将 props 中的 key 缓存起来
     keys.push(key)
+    // 检测是否符合期望的类型，并返回对应的默认值
     const value = validateProp(key, propsOptions, propsData, vm)
     /* istanbul ignore else */
     if (process.env.NODE_ENV !== 'production') {
@@ -110,6 +129,7 @@ function initProps (vm: Component, propsOptions: Object) {
 }
 
 function initData (vm: Component) {
+  //拿到Vue实例上的data属性
   let data = vm.$options.data
   data = vm._data = typeof data === 'function'
     ? getData(data, vm)

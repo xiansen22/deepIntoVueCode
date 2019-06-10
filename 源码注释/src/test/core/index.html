@@ -18,10 +18,49 @@
                 {{item}}
             </div>
             <div>{{info.home.title}}</div>
+            <children-a ></children-a>
+            <div id="children_b"></div>
         </div>
     </div>
     <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
     <script>
+        var Profile = Vue.extend({
+                props: {
+                    "boolean": {
+                        type: Boolean
+                    },
+                    "title": {
+                        type: String
+                    }
+                },
+                template: '<p>{{firstName}} {{lastName}} aka {{alias}} {{boolean}} {{title}}</p>',
+                data: function () {
+                    return {
+                        firstName: 'Walter',
+                        lastName: 'White',
+                        alias: 'Heisenberg'
+                    }
+                }
+            })
+        new Profile({
+            propsData: {
+                "boolean": "boolean",
+                title: "a"
+            }
+        }).$mount("#children_b")
+        var childrenA = Vue.component("ChildrenA", {
+            props: {
+                title: {
+                    "type": Boolean
+                }
+            },
+            template: '<div>{{title}}</div>',
+            data: function(){
+                return {
+                    name: "ChildrenA"   
+                }
+            }
+        })
         var vm = new Vue({
             el: "#main",
             data: {
@@ -36,6 +75,9 @@
                         title: "唐山"
                     }
                 }
+            },
+            components: {
+                "children-a": childrenA
             },
             methods: {
                 handleClick: function(e){

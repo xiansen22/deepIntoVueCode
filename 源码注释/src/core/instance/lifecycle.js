@@ -29,11 +29,16 @@ export function setActiveInstance(vm: Component) {
   }
 }
 
+/**
+ * 主要定义了一些属性，并没有实例化什么东西
+ */
 export function initLifecycle (vm: Component) {
   const options = vm.$options
 
   // locate first non-abstract parent
+  // 定位第一个非抽象父级
   let parent = options.parent
+
   if (parent && !options.abstract) {
     while (parent.$options.abstract && parent.$parent) {
       parent = parent.$parent
@@ -41,17 +46,25 @@ export function initLifecycle (vm: Component) {
     parent.$children.push(vm)
   }
 
+  //声明父级属性
   vm.$parent = parent
+  //声明根组件
   vm.$root = parent ? parent.$root : vm
-
+  //声明方法子组件属性
   vm.$children = []
+  //声明所有ref
   vm.$refs = {}
-
+  //声明组件级别的 watcher 实例
   vm._watcher = null
+
   vm._inactive = null
+
   vm._directInactive = false
+  //组件是否挂载属性
   vm._isMounted = false
+  //组件是否已被销毁
   vm._isDestroyed = false
+  //组件是否正在销毁
   vm._isBeingDestroyed = false
 }
 
@@ -336,6 +349,8 @@ export function deactivateChildComponent (vm: Component, direct?: boolean) {
 export function callHook (vm: Component, hook: string) {
   // #7573 disable dep collection when invoking lifecycle hooks
   pushTarget()
+  
+  //钩子函数可能会有多个，比如 minx 混入的钩子函数不会替换组件原有的钩子函数
   const handlers = vm.$options[hook]
   const info = `${hook} hook`
   if (handlers) {
