@@ -37,6 +37,7 @@ export function validateProp (
   let value = propsData[key]
 
   // boolean casting
+  // 在处理 prop 时，优先处理 propsData 中是否覆盖了该 key
 
   // 处理 prop 类型为 布尔值的情况 start
   const booleanIndex = getTypeIndex(Boolean, prop.type)
@@ -78,6 +79,7 @@ export function validateProp (
 
 /**
  * Get the default value of a prop.
+ * 获取一个 prop 的默认值
  */
 function getPropDefaultValue (vm: ?Component, prop: PropOptions, key: string): any {
   // no default, return undefined
@@ -85,7 +87,7 @@ function getPropDefaultValue (vm: ?Component, prop: PropOptions, key: string): a
   if (!hasOwn(prop, 'default')) {
     return undefined
   }
-  // default 对应的是函数，拿到默认的值函数
+  // default 拿到默认的值
   const def = prop.default
   // warn against non-factory defaults for Object & Array
   if (process.env.NODE_ENV !== 'production' && isObject(def)) {
@@ -98,6 +100,7 @@ function getPropDefaultValue (vm: ?Component, prop: PropOptions, key: string): a
   }
   // the raw prop value was also undefined from previous render,
   // return previous default value to avoid unnecessary watcher trigger
+  // ???
   if (vm && vm.$options.propsData &&
     vm.$options.propsData[key] === undefined &&
     vm._props[key] !== undefined

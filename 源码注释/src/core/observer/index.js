@@ -166,9 +166,9 @@ export function defineReactive(
   customSetter?: ?Function,
   shallow?: boolean
 ) {
-  //为该属性创建依赖管理
+  // 为该属性创建依赖管理
   const dep = new Dep();
-  //获取该属性在该对象上的描述属性
+  // 获取该属性在该对象上的描述属性
   const property = Object.getOwnPropertyDescriptor(obj, key);
   //描述属性存在且不可配置，则放弃侦测该属性的变化
   if (property && property.configurable === false) {
@@ -193,7 +193,7 @@ export function defineReactive(
       const value = getter ? getter.call(obj) : val;
       //如果存在依赖，收集依赖
       if (Dep.target) {
-        dep.depend();   //在此收集依赖
+        dep.depend();   //在此收集依赖,收集的依赖是 watcher 实例
 
         if (childOb) {  //childOb 存在有两种情况，value为 Object 类型 或 Array 类型
           childOb.dep.depend(); //同时用 Observer 实例的dep属性收集依赖，供 Array和Object 使用 子属性的值发生变化也归属于父属性的侦测范围

@@ -39,7 +39,7 @@ export default class Dep {
 
   depend () {
     if (Dep.target) {
-      //通过 Watcher 添加依赖
+      // 通过 watcher 实例添加依赖
       Dep.target.addDep(this)
     }
   }

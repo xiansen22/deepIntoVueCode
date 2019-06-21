@@ -157,7 +157,9 @@ export function mountComponent (
   hydrating?: boolean
 ): Component {
   vm.$el = el
+  // 如果没有定义渲染函数
   if (!vm.$options.render) {
+    // 自指定一个渲染函数
     vm.$options.render = createEmptyVNode
     if (process.env.NODE_ENV !== 'production') {
       /* istanbul ignore if */
@@ -170,7 +172,7 @@ export function mountComponent (
           vm
         )
       } else {
-        warn(
+        warn( 
           'Failed to mount component: template or render function not defined.',
           vm
         )

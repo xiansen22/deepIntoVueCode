@@ -56,16 +56,16 @@ export default class Watcher {
 
   constructor (
     vm: Component,
-    expOrFn: string | Function,
+    expOrFn: string | Function, // expOrFn 可以是 obj.key 或者 函数
     cb: Function,
     options?: ?Object,
-    isRenderWatcher?: boolean
+    isRenderWatcher?: boolean // 组件级别的，需要渲染
   ) {
     this.vm = vm
     if (isRenderWatcher) {
-      vm._watcher = this
+      vm._watcher = this // 将watcher 实例绑定到组件实例上
     }
-    //将 Watcher 实例
+    //将 Watcher 实例 保存到 组件实例的 _watchers 属性
     vm._watchers.push(this)
     // options
     if (options) {
@@ -80,7 +80,7 @@ export default class Watcher {
     this.cb = cb    //依赖回调函数
     this.id = ++uid // uid for batching
     this.active = true
-    this.dirty = this.lazy // for lazy watchers
+    this.dirty = this.lazy // 针对于懒执行的 watcher
     this.deps = []
     this.newDeps = []
     this.depIds = new Set()
@@ -105,7 +105,8 @@ export default class Watcher {
       }
     }
 
-    //new Watcher 时执行一下 get 函数，手动触发可侦测数据的 getter，用于依赖收集
+    // new Watcher 时执行一下 get 函数，手动触发可侦测数据的 getter，用于依赖收集
+    // 如果定义了懒执行，那么先不执行 get 函数
     this.value = this.lazy
       ? undefined
       : this.get()
@@ -113,14 +114,16 @@ export default class Watcher {
 
   /**
    * Evaluate the getter, and re-collect dependencies.
+   * 主要是为了执行 getter ，用以收集依赖
    */
   get () {
-    //设置 window.target，并且将此 watcher 存储在targetStack上
+    // 设置 window.target，并且将此 watcher 存储在targetStack上
     pushTarget(this)
     let value
     const vm = this.vm
     try {
-      //手动触发 可侦测数据的 getter，开始 observer 收集依赖
+      // 手动触发 可侦测数据的 getter，开始 observer 收集依赖
+      // 触发 getter 后，会触发依赖的属性 getter,从而进行依赖收集
       value = this.getter.call(vm, vm)
     } catch (e) {
       if (this.user) {
@@ -146,13 +149,17 @@ export default class Watcher {
    * 
    */
   addDep (dep: Dep) {
+    // 拿到依赖管理Dep实例的id
     const id = dep.id
+    // 如果没有存储Dep实例的id
     if (!this.newDepIds.has(id)) {
+      // 存储Dep实例的id到newDepIds
       this.newDepIds.add(id)
+      // 存储Dep实例到newDeps
       this.newDeps.push(dep)
       //如果 依赖 实例没有被收集过，那么收集此依赖
       if (!this.depIds.has(id)) {
-        //将 Watcher 实例添加到 dep 里面
+        //将 watcher 实例添加到 Dep 实例里面
         dep.addSub(this)
       }
     }
@@ -160,21 +167,26 @@ export default class Watcher {
 
   /**
    * Clean up for dependency collection.
+   * 清空依赖收集
    */
   cleanupDeps () {
+    // 使Dep实例与Watcher实例之间保持一致
     let i = this.deps.length
     while (i--) {
       const dep = this.deps[i]
+      // 如果 wahcer 实例上的dep
       if (!this.newDepIds.has(dep.id)) {
         dep.removeSub(this)
       }
     }
+    // watcher 实例的 depsIDs 与 newDepIds 相互交互，并将 newDepIds 置空
     let tmp = this.depIds
     
     this.depIds = this.newDepIds
     this.newDepIds = tmp
     this.newDepIds.clear()
 
+    // watcher 实例的 deps 与 newDeps 相互交互，并将 newDeps 置空
     tmp = this.deps
 
     this.deps = this.newDeps
@@ -231,6 +243,8 @@ export default class Watcher {
   /**
    * Evaluate the value of the watcher.
    * This only gets called for lazy watchers.
+   * 执行 watcher 实例的 get 函数，获取值  
+   * 仅适用于懒执行的
    */
   evaluate () {
     this.value = this.get()
@@ -243,6 +257,7 @@ export default class Watcher {
   depend () {
     let i = this.deps.length
     while (i--) {
+      // 将此 watcher 实例收集到所有依赖与他的dep中
       this.deps[i].depend()
     }
   }

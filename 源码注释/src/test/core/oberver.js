@@ -7,7 +7,7 @@ class Observer {
     this.vmCount = 0;
     /**
      * 将 当前 Observer 实例赋给对象的 __ob__ 属性
-     * 目的：为了在重写的数组中访问到 Observer 实例，到达访问 dep 触发依赖收集更新的目的。
+     * 目的：为了在重写的数组中访问到 Observer 实例，到达访问 dep 触发依赖收集更新的目的。 
      */
    
 
@@ -17,7 +17,7 @@ class Observer {
       //处理对象类型的侦测
       this.walk(value);
     }
-  }
+  } 
 
   /**
    * Walk through all properties and convert them into

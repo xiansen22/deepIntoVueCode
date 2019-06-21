@@ -15,7 +15,7 @@ let uid = 0
 export function initMixin (Vue: Class<Component>) {
   Vue.prototype._init = function (options?: Object) {
     const vm: Component = this
-    // a uid
+    // a uid  每一个 Vue 实例都有一个全局 uid 标识
     vm._uid = uid++
 
     let startTag, endTag

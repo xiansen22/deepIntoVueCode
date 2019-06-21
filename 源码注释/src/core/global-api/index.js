@@ -20,6 +20,7 @@ import {
 
 export function initGlobalAPI (Vue: GlobalAPI) {
   // config
+  // 定义默认配置
   const configDef = {}
   configDef.get = () => config
   if (process.env.NODE_ENV !== 'production') {
@@ -29,6 +30,7 @@ export function initGlobalAPI (Vue: GlobalAPI) {
       )
     }
   }
+  // Vue 构造函数上定义默认配置
   Object.defineProperty(Vue, 'config', configDef)
 
   // exposed util methods.

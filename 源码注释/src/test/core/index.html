@@ -13,27 +13,23 @@
                 <span>姓名：{{item.name}}</span>
                 <span>年龄：{{item.age}}</span>
             </div>
-            <div>{{listNumber[0]}}</div>
-            <div v-for="(item, index) in listNumber" :key = "index">
-                {{item}}
-            </div>
-            <div>{{info.home.title}}</div>
-            <children-a ></children-a>
-            <div id="children_b"></div>
         </div>
+        <children-a title="hello hy"></children-a>
+        <div id="children_b"></div>
+        <div>{{money}}</div>
     </div>
     <script src="https://cdn.jsdelivr.net/npm/vue"></script>
     <script>
         var Profile = Vue.extend({
                 props: {
-                    "boolean": {
+                    "Boolean": {
                         type: Boolean
                     },
                     "title": {
                         type: String
                     }
                 },
-                template: '<p>{{firstName}} {{lastName}} aka {{alias}} {{boolean}} {{title}}</p>',
+                template: '<p>{{firstName}} {{lastName}} aka {{alias}} {{Boolean}} {{title}}</p>',
                 data: function () {
                     return {
                         firstName: 'Walter',
@@ -44,14 +40,17 @@
             })
         new Profile({
             propsData: {
-                "boolean": "boolean",
+                "Boolean": "",
                 title: "a"
             }
         }).$mount("#children_b")
         var childrenA = Vue.component("ChildrenA", {
             props: {
                 title: {
-                    "type": Boolean
+                    "type": String,
+                    default: function(vm){
+                        return "hy"
+                    }
                 }
             },
             template: '<div>{{title}}</div>',
@@ -59,19 +58,38 @@
                 return {
                     name: "ChildrenA"   
                 }
+            },
+            mounted: function(){
+     
+            },
+            methods: {
+
             }
         })
         var vm = new Vue({
             el: "#main",
             data: {
-                list: [1,2,3]
+                list: [{name:"hy", age: 18}],
+                baseMoney: 10,
+                moreMoney: 12,
+            },
+            computed: {
+                money: {
+                    get: function(){
+                        return this.baseMoney + this.moreMoney;
+                    }
+                }
             },
             components: {
                 "children-a": childrenA
             },
+            mounted: function(){
+                console.log(this.$options.render);
+            },
             methods: {
                 handleClick: function(){
                     this.list = this.list.concat([2,3,54]);
+                }
             }
         })
     </script>
