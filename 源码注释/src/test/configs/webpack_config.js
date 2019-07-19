@@ -16,11 +16,12 @@ module.exports = {
     },
     resolve: {
         alias: {
-            core: path.resolve(__dirname, "../../core"),
-            shared: path.resolve(__dirname, "../../shared"),
-            compiler: path.resolve(__dirname, "../../compiler"),
-            server: path.resolve(__dirname, "../../server"),
-            sfc: path.resolve(__dirname, "../../sfc"),
+            core: path.resolve(__dirname, "../core"),
+            shared: path.resolve(__dirname, "../shared"),
+            compiler: path.resolve(__dirname, "../compiler"),
+            server: path.resolve(__dirname, "../server"),
+            sfc: path.resolve(__dirname, "../sfc"),
+            weex:  path.resolve(__dirname, "../platforms/weex"),
         }
     },
     module: {

@@ -1,1 +1,1 @@
-import Vue from "../../core/index.js"
+import Vue from "../core/index.js"

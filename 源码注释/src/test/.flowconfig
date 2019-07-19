@@ -11,7 +11,6 @@
 [lints]
 
 [options]
-unsafe.enable_getters_and_setters=true
 module.name_mapper='^compiler/\(.*\)$' -> '<PROJECT_ROOT>/compiler/\1'
 module.name_mapper='^core/\(.*\)$' -> '<PROJECT_ROOT>/core/\1'
 module.name_mapper='^shared/\(.*\)$' -> '<PROJECT_ROOT>/shared/\1'
