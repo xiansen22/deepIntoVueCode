@@ -22,6 +22,7 @@ module.exports = {
             server: path.resolve(__dirname, "../server"),
             sfc: path.resolve(__dirname, "../sfc"),
             weex:  path.resolve(__dirname, "../platforms/weex"),
+            web: path.resolve(__dirname, "../platforms/web"),
         }
     },
     module: {
