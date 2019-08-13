@@ -247,6 +247,7 @@ strats.computed = function (
   vm?: Component,
   key: string
 ): ?Object {
+  console.log(222);
   if (childVal && process.env.NODE_ENV !== 'production') {
     assertObjectType(key, childVal, vm)
   }
@@ -398,7 +399,7 @@ export function mergeOptions (
   if (typeof child === 'function') {
     child = child.options
   }
-
+  
   normalizeProps(child, vm)
   normalizeInject(child, vm)
   normalizeDirectives(child)

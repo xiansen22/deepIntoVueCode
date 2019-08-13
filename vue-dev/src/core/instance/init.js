@@ -37,7 +37,7 @@ export function initMixin (Vue: Class<Component>) {
       // 内部组件实例化优化
       // 因为动态配置合并是一个很慢的操作，并且内部组件的配置项不需要特殊处理
       initInternalComponent(vm, options)
-    } else { //普通配置型的合并操作
+    } else { // 普通配置型的合并操作
       vm.$options = mergeOptions(
         resolveConstructorOptions(vm.constructor),
         options || {},
@@ -51,12 +51,17 @@ export function initMixin (Vue: Class<Component>) {
       vm._renderProxy = vm
     }
     // expose real self
+    // 通过 _self 将实例暴漏出去
     vm._self = vm
+    // 定义生命周期中一些需要的属性
     initLifecycle(vm)
     initEvents(vm)
     initRender(vm)
+    // 执行 beforeCreate 钩子函数
     callHook(vm, 'beforeCreate')
+    // 在解析 data/props 前解析 injections; inject 主要为高阶插件/组件库提供用例
     initInjections(vm) // resolve injections before data/props
+    // 初始化 state
     initState(vm)
     initProvide(vm) // resolve provide after data/props
     callHook(vm, 'created')

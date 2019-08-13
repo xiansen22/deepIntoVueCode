@@ -46,8 +46,10 @@ export function proxy (target: Object, sourceKey: string, key: string) {
 }
 
 export function initState (vm: Component) {
+  // 在实例上定义 _watchers 用以收集该组件下所有的侦测 watcher 实例
   vm._watchers = []
   const opts = vm.$options
+  // 如果存在 props,则初始化 props
   if (opts.props) initProps(vm, opts.props)
   if (opts.methods) initMethods(vm, opts.methods)
   if (opts.data) {
@@ -61,19 +63,31 @@ export function initState (vm: Component) {
   }
 }
 
+/**
+ * 
+ * @param {Component} vm 组件实例
+ * @param {Object} propsOptions props
+ */
 function initProps (vm: Component, propsOptions: Object) {
+  // propsData 只用于 new 创建的实例中。创建实例时传递 props。主要作用是方便测试。
   const propsData = vm.$options.propsData || {}
+  // 在实例上定义 _props 
   const props = vm._props = {}
   // cache prop keys so that future props updates can iterate using Array
   // instead of dynamic object key enumeration.
+  // 将所有的 props key 用 $options._propKeys 保存起来以至于在未来 props 更新时可以用数组替代 object 来遍历
   const keys = vm.$options._propKeys = []
+  // 是否是根组件，没有父组件就是根组件
   const isRoot = !vm.$parent
   // root instance props should be converted
   if (!isRoot) {
     toggleObserving(false)
   }
+  // 对 props 进行遍历处理
   for (const key in propsOptions) {
+    // 将 key 缓存起来
     keys.push(key)
+    // 检验一个 prop 是否是有效的 prop
     const value = validateProp(key, propsOptions, propsData, vm)
     /* istanbul ignore else */
     if (process.env.NODE_ENV !== 'production') {

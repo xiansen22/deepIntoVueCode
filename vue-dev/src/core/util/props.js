@@ -24,12 +24,17 @@ export function validateProp (
   propsData: Object,
   vm?: Component
 ): any {
+  // 拿到目标 prop
   const prop = propOptions[key]
+  // 查看 propsData 中是否存在该 prop
   const absent = !hasOwn(propsData, key)
+  // 如果存在则取出
   let value = propsData[key]
-  // boolean casting
+  // boolean casting 对 Boolean 类型的 prop 进行处理
   const booleanIndex = getTypeIndex(Boolean, prop.type)
+  // > -1 是 Boolean 类型
   if (booleanIndex > -1) {
+    // 如果 propsData 中无该 prop 且 该 prop 无默认值，则值为 false
     if (absent && !hasOwn(prop, 'default')) {
       value = false
     } else if (value === '' || value === hyphenate(key)) {

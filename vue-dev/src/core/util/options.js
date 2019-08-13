@@ -25,6 +25,7 @@ import {
  * Option overwriting strategies are functions that handle
  * how to merge a parent option value and a child option
  * value into the final value.
+ * config.optionMergeStrategies 的初始化是在下面进行的
  */
 const strats = config.optionMergeStrategies
 
@@ -245,12 +246,15 @@ strats.computed = function (
   parentVal: ?Object,
   childVal: ?Object,
   vm?: Component,
-  key: string
+  key: string,
+  a: string
 ): ?Object {
   if (childVal && process.env.NODE_ENV !== 'production') {
     assertObjectType(key, childVal, vm)
   }
+  //  如果父属性无值则直接返回子属性
   if (!parentVal) return childVal
+  // 进行子属性对父属性的继承，对于子父属性中都有的属性，子属性的值会覆盖父属性的值
   const ret = Object.create(null)
   extend(ret, parentVal)
   if (childVal) extend(ret, childVal)

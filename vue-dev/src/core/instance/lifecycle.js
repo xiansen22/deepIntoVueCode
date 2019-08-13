@@ -97,7 +97,7 @@ export function lifecycleMixin (Vue: Class<Component>) {
   Vue.prototype.$destroy = function () {
     const vm: Component = this
     if (vm._isBeingDestroyed) {
-      return
+      return;
     }
     callHook(vm, 'beforeDestroy')
     vm._isBeingDestroyed = true
@@ -336,10 +336,13 @@ export function deactivateChildComponent (vm: Component, direct?: boolean) {
 export function callHook (vm: Component, hook: string) {
   // #7573 disable dep collection when invoking lifecycle hooks
   pushTarget()
+  // 因为可能存在 mixin (混入) 等操作，会使相应的 hook 有多个
   const handlers = vm.$options[hook]
   const info = `${hook} hook`
+  // 对相应的 hook 进行遍历执行
   if (handlers) {
     for (let i = 0, j = handlers.length; i < j; i++) {
+      // 使用统一的错误处理函数对 hook 进行包装，便于对错误进行监控
       invokeWithErrorHandling(handlers[i], vm, null, vm, info)
     }
   }
