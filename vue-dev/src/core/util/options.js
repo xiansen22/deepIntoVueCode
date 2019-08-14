@@ -124,6 +124,7 @@ strats.data = function (
   childVal: any,
   vm?: Component
 ): ?Function {
+  // 组件状态下的 data 必须是一个函数
   if (!vm) {
     if (childVal && typeof childVal !== 'function') {
       process.env.NODE_ENV !== 'production' && warn(

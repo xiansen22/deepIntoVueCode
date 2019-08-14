@@ -9,6 +9,7 @@ export const unicodeRegExp = /a-zA-Z\u00B7\u00C0-\u00D6\u00D8-\u00F6\u00F8-\u037
 
 /**
  * Check if a string starts with $ or _
+ * 检测字符串是否是以 $ 或者 _ 开头的，在 vue 中 以 _ 或者 $ 开始的 key 为 实例上的私有属性
  */
 export function isReserved (str: string): boolean {
   const c = (str + '').charCodeAt(0)

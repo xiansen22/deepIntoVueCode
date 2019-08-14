@@ -51,6 +51,7 @@ export function initState (vm: Component) {
   const opts = vm.$options
   // 如果存在 props,则初始化 props
   if (opts.props) initProps(vm, opts.props)
+  // 如果存在 methods ，则初始化 methods
   if (opts.methods) initMethods(vm, opts.methods)
   if (opts.data) {
     initData(vm)
@@ -127,9 +128,11 @@ function initProps (vm: Component, propsOptions: Object) {
 
 function initData (vm: Component) {
   let data = vm.$options.data
+  // 在实例上定义 _data 用以保存 data 上的数据
   data = vm._data = typeof data === 'function'
-    ? getData(data, vm)
+    ? getData(data, vm) // 解析 data
     : data || {}
+  // data 必须是一个纯对象
   if (!isPlainObject(data)) {
     data = {}
     process.env.NODE_ENV !== 'production' && warn(
@@ -139,9 +142,10 @@ function initData (vm: Component) {
     )
   }
   // proxy data on instance
+  // 在实例上代理 data 数据
   const keys = Object.keys(data)
-  const props = vm.$options.props
-  const methods = vm.$options.methods
+  const props = vm.$options.props // data 中不能有与 props 相同的 key  
+  const methods = vm.$options.methods // data 中不能有与 methods 相同的 key
   let i = keys.length
   while (i--) {
     const key = keys[i]
@@ -159,16 +163,19 @@ function initData (vm: Component) {
         `Use prop default value instead.`,
         vm
       )
-    } else if (!isReserved(key)) {
+    } else if (!isReserved(key)) { // key 不能以 _ 或者 $ 开头; _ 或者 $ 开始的 key 为 实例上的私有属性
+      // 将 data 中的数据代理到 vm 实例上
       proxy(vm, `_data`, key)
     }
   }
   // observe data
+  // 侦测 data
   observe(data, true /* asRootData */)
 }
 
 export function getData (data: Function, vm: Component): any {
   // #7573 disable dep collection when invoking data getters
+  // 在 data 触发 getter 时不进行依赖收集
   pushTarget()
   try {
     return data.call(vm, vm)
@@ -275,6 +282,7 @@ function createGetterInvoker(fn) {
   }
 }
 
+// 初始化 methods,主要是将 mthods 上的方法绑定到 组件 vm 实例上，通过 this.xxx 调用，并指定上下文为 vm 
 function initMethods (vm: Component, methods: Object) {
   const props = vm.$options.props
   for (const key in methods) {

@@ -55,6 +55,7 @@ export default class Dep {
 Dep.target = null
 const targetStack = []
 
+// 手动设置一个 target ，如果 target 为空，则表示在触发 getter 时不进行依赖收集
 export function pushTarget (target: ?Watcher) {
   targetStack.push(target)
   Dep.target = target
