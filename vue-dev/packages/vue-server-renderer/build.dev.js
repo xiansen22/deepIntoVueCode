@@ -164,6 +164,7 @@ function cached (fn) {
 
 /**
  * Camelize a hyphen-delimited string.
+ * 将使用 - 的连字符转换为驼峰式，如（string-word => stringWord） 
  */
 var camelizeRE = /-(\w)/g;
 var camelize = cached(function (str) {
@@ -179,6 +180,7 @@ var capitalize = cached(function (str) {
 
 /**
  * Hyphenate a camelCase string.
+ * 将一个驼峰式的字符串转换成用 - 连接的连字符
  */
 var hyphenateRE = /\B([A-Z])/g;
 var hyphenate = cached(function (str) {
@@ -767,12 +769,14 @@ if (typeof Set !== 'undefined' && isNative(Set)) {
 
 var SSR_ATTR = 'data-server-rendered';
 
+// 定义资源选项列表
 var ASSET_TYPES = [
   'component',
   'directive',
   'filter'
 ];
 
+// 定义生命周期钩子函数列表
 var LIFECYCLE_HOOKS = [
   'beforeCreate',
   'created',
@@ -1305,6 +1309,7 @@ function dependArray (value) {
  * Option overwriting strategies are functions that handle
  * how to merge a parent option value and a child option
  * value into the final value.
+ * config.optionMergeStrategies 的初始化是在下面进行的
  */
 var strats = config.optionMergeStrategies;
 
@@ -1525,12 +1530,15 @@ strats.computed = function (
   parentVal,
   childVal,
   vm,
-  key
+  key,
+  a
 ) {
   if (childVal && "development" !== 'production') {
     assertObjectType(key, childVal, vm);
   }
+  //  如果父属性无值则直接返回子属性
   if (!parentVal) { return childVal }
+  // 进行子属性对父属性的继承，对于子父属性中都有的属性，子属性的值会覆盖父属性的值
   var ret = Object.create(null);
   extend(ret, parentVal);
   if (childVal) { extend(ret, childVal); }
@@ -1574,27 +1582,33 @@ function validateComponentName (name) {
 /**
  * Ensure all props option syntax are normalized into the
  * Object-based format.
+ * 规范化所有 props ，确保每一个 props 都为对象格式
  */
 function normalizeProps (options, vm) {
   var props = options.props;
   if (!props) { return }
   var res = {};
   var i, val, name;
-  if (Array.isArray(props)) {
+  if (Array.isArray(props)) { // 如果 props 为数组，则需要将 props 中的每一项转换为对象格式
     i = props.length;
+    // 对 props 进行遍历处理
     while (i--) {
       val = props[i];
+      // props 如果是数组，则数组中的每一项都应为字符串类型
       if (typeof val === 'string') {
+        // 如果 prop 为 - 形式的连字符，则将其转换称驼峰式 
         name = camelize(val);
         res[name] = { type: null };
       } else {
         warn('props must be strings when using array syntax.');
       }
     }
-  } else if (isPlainObject(props)) {
+  } else if (isPlainObject(props)) {  // 如果 props 为纯对象
     for (var key in props) {
       val = props[key];
+      // 对使用-连字符的键名进行驼峰处理
       name = camelize(key);
+      // 如果 prop 为纯对象，则不需要我们进行对象格式化，直接返回。
       res[name] = isPlainObject(val)
         ? val
         : { type: val };
@@ -1638,6 +1652,7 @@ function normalizeInject (options, vm) {
 
 /**
  * Normalize raw function directives into object format.
+ * 对options.directives上的内容进行规范，使其转换为真正的指令格式，将指令函数赋给 bind 和 update
  */
 function normalizeDirectives (options) {
   var dirs = options.directives;
@@ -1664,6 +1679,7 @@ function assertObjectType (name, value, vm) {
 /**
  * Merge two option objects into a new one.
  * Core utility used in both instantiation and inheritance.
+ * 将两个 option 进行合并。
  */
 function mergeOptions (
   parent,
@@ -1677,9 +1693,11 @@ function mergeOptions (
   if (typeof child === 'function') {
     child = child.options;
   }
-
+  // 规范化化 options.props
   normalizeProps(child, vm);
+  // 暂解
   normalizeInject(child, vm);
+  // 对 options.directives 进行规范化
   normalizeDirectives(child);
 
   // Apply extends and mixins on the child options,
@@ -1757,30 +1775,36 @@ function validateProp (
   propsData,
   vm
 ) {
+  // 拿到目标 prop
   var prop = propOptions[key];
+  // 查看 propsData 中是否存在该 prop
   var absent = !hasOwn(propsData, key);
+  // 如果存在则取出
   var value = propsData[key];
-  // boolean casting
+  // boolean casting 对 Boolean 类型的 prop 进行处理
   var booleanIndex = getTypeIndex(Boolean, prop.type);
+  // > -1 是 Boolean 类型
   if (booleanIndex > -1) {
+    // 如果 propsData 中无该 prop 且 该 prop 无默认值，则值为 false
     if (absent && !hasOwn(prop, 'default')) {
       value = false;
-    } else if (value === '' || value === hyphenate(key)) {
+    } else if (value === '' || value === hyphenate(key)) { // 如果 propsData 中有该 prop 且为空字符 或者 value 和 key 相同都为 boolean 
       // only cast empty string / same name to boolean if
-      // boolean has higher priority
+      // boolean has higher priority 布尔值有更高的优先级
       var stringIndex = getTypeIndex(String, prop.type);
       if (stringIndex < 0 || booleanIndex < stringIndex) {
         value = true;
       }
     }
   }
-  // check default value
+  // check default value，获取默认的 prop 值
   if (value === undefined) {
     value = getPropDefaultValue(vm, prop, key);
     // since the default value is a fresh copy,
     // make sure to observe it.
     var prevShouldObserve = shouldObserve;
     toggleObserving(true);
+    // 对 propValue 进行侦测
     observe(value);
     toggleObserving(prevShouldObserve);
   }
@@ -1792,9 +1816,10 @@ function validateProp (
 
 /**
  * Get the default value of a prop.
+ * 获取一个 prop 默认值
  */
 function getPropDefaultValue (vm, prop, key) {
-  // no default, return undefined
+  // 没有默认值返回 undefined
   if (!hasOwn(prop, 'default')) {
     return undefined
   }
@@ -1810,6 +1835,7 @@ function getPropDefaultValue (vm, prop, key) {
   }
   // the raw prop value was also undefined from previous render,
   // return previous default value to avoid unnecessary watcher trigger
+  // 如果已经经过 render 过程 _props[key] 上有值 
   if (vm && vm.$options.propsData &&
     vm.$options.propsData[key] === undefined &&
     vm._props[key] !== undefined
@@ -3123,7 +3149,7 @@ var startTagOpen = new RegExp(("^<" + qnameCapture));
 var startTagClose = /^\s*(\/?)>/;
 var endTag = new RegExp(("^<\\/" + qnameCapture + "[^>]*>"));
 var doctype = /^<!DOCTYPE [^>]+>/i;
-// #7298: escape - to avoid being pased as HTML comment when inlined in page
+// #7298: escape - to avoid being passed as HTML comment when inlined in page
 var comment = /^<!\--/;
 var conditionalComment = /^<!\[/;
 
@@ -3556,7 +3582,7 @@ function parseString (chr) {
 /*  */
 
 var onRE = /^@|^v-on:/;
-var dirRE = /^v-|^@|^:/;
+var dirRE = /^v-|^@|^:|^#/;
 var forAliasRE = /([\s\S]*?)\s+(?:in|of)\s+([\s\S]*)/;
 var forIteratorRE = /,([^,\}\]]*)(?:,([^,\}\]]*))?$/;
 var stripParensRE = /^\(|\)$/g;
@@ -4782,7 +4808,7 @@ var baseOptions = {
 
 /*  */
 
-var fnExpRE = /^([\w$_]+|\([^)]*?\))\s*=>|^function\s*(?:[\w$]+)?\s*\(/;
+var fnExpRE = /^([\w$_]+|\([^)]*?\))\s*=>|^function(?:\s+[\w$]+)?\s*\(/;
 var fnInvokeRE = /\([^)]*?\);*$/;
 var simplePathRE = /^[A-Za-z_$][\w$]*(?:\.[A-Za-z_$][\w$]*|\['[^']*?']|\["[^"]*?"]|\[\d+]|\[[A-Za-z_$][\w$]*])*$/;
 
@@ -6022,6 +6048,8 @@ function checkNode (node, warn) {
           var range = node.rawAttrsMap[name];
           if (name === 'v-for') {
             checkFor(node, ("v-for=\"" + value + "\""), warn, range);
+          } else if (name === 'v-slot' || name[0] === '#') {
+            checkFunctionParameterExpression(value, (name + "=\"" + value + "\""), warn, range);
           } else if (onRE.test(name)) {
             checkEvent(value, (name + "=\"" + value + "\""), warn, range);
           } else {
@@ -6095,6 +6123,19 @@ function checkExpression (exp, text, warn, range) {
         range
       );
     }
+  }
+}
+
+function checkFunctionParameterExpression (exp, text, warn, range) {
+  try {
+    new Function(exp, '');
+  } catch (e) {
+    warn(
+      "invalid function parameter expression: " + (e.message) + " in\n\n" +
+      "    " + exp + "\n\n" +
+      "  Raw expression: " + (text.trim()) + "\n",
+      range
+    );
   }
 }
 
@@ -7223,7 +7264,7 @@ function bindDynamicKeys (baseObj, values) {
     if (typeof key === 'string' && key) {
       baseObj[values[i]] = values[i + 1];
     } else if (key !== '' && key !== null) {
-      // null is a speical value for explicitly removing a binding
+      // null is a special value for explicitly removing a binding
       warn(
         ("Invalid value for dynamic directive argument (expected string or null): " + key),
         this
@@ -7706,10 +7747,13 @@ function deactivateChildComponent (vm, direct) {
 function callHook (vm, hook) {
   // #7573 disable dep collection when invoking lifecycle hooks
   pushTarget();
+  // 因为可能存在 mixin (混入) 等操作，会使相应的 hook 有多个
   var handlers = vm.$options[hook];
   var info = hook + " hook";
+  // 对相应的 hook 进行遍历执行
   if (handlers) {
     for (var i = 0, j = handlers.length; i < j; i++) {
+      // 使用统一的错误处理函数对 hook 进行包装，便于对错误进行监控
       invokeWithErrorHandling(handlers[i], vm, null, vm, info);
     }
   }
@@ -7798,7 +7842,10 @@ function resolveInject (inject, vm) {
 }
 
 /*  */
-
+/**
+ * 解析 Vue 构造函数上默认的 config， 并将其返回
+ * 如果该构造函数是通过 vue.extend 扩展来的，则需要递归，收集所有的 option
+ */
 function resolveConstructorOptions (Ctor) {
   var options = Ctor.options;
   if (Ctor.super) {

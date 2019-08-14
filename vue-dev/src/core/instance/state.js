@@ -87,8 +87,9 @@ function initProps (vm: Component, propsOptions: Object) {
   for (const key in propsOptions) {
     // 将 key 缓存起来
     keys.push(key)
-    // 检验一个 prop 是否是有效的 prop
+    // 获取 prop 的值，其中对 Boolean 类型的 prop 进行特殊处理
     const value = validateProp(key, propsOptions, propsData, vm)
+    console.log(value, key);
     /* istanbul ignore else */
     if (process.env.NODE_ENV !== 'production') {
       const hyphenatedKey = hyphenate(key)
@@ -111,6 +112,7 @@ function initProps (vm: Component, propsOptions: Object) {
         }
       })
     } else {
+      // 对 props 中的每一个值进行数据侦测
       defineReactive(props, key, value)
     }
     // static props are already proxied on the component's prototype

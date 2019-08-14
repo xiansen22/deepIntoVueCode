@@ -7,10 +7,10 @@
 new Vue({
     el: '#app',
     props: {
-        list: function() {
-            return {
-                type: Object,
-                default: {}
+        list: {
+            type: Object,
+            default: function() {
+                return {}
             }
         }
     },
@@ -31,5 +31,8 @@ new Vue({
     },
     beforeCreate: function() {
       console.log('i am beforeCreate');
+    },
+    mounted: function(){
+        console.log(this.list);
     }
 })

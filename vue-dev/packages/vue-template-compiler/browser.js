@@ -168,6 +168,7 @@
 
   /**
    * Camelize a hyphen-delimited string.
+   * 将使用 - 的连字符转换为驼峰式，如（string-word => stringWord） 
    */
   var camelizeRE = /-(\w)/g;
   var camelize = cached(function (str) {
@@ -176,6 +177,7 @@
 
   /**
    * Hyphenate a camelCase string.
+   * 将一个驼峰式的字符串转换成用 - 连接的连字符
    */
   var hyphenateRE = /\B([A-Z])/g;
   var hyphenate = cached(function (str) {
@@ -310,7 +312,7 @@
   var startTagClose = /^\s*(\/?)>/;
   var endTag = new RegExp(("^<\\/" + qnameCapture + "[^>]*>"));
   var doctype = /^<!DOCTYPE [^>]+>/i;
-  // #7298: escape - to avoid being pased as HTML comment when inlined in page
+  // #7298: escape - to avoid being passed as HTML comment when inlined in page
   var comment = /^<!\--/;
   var conditionalComment = /^<!\[/;
 
@@ -814,12 +816,14 @@
     }());
   }
 
+  // 定义资源选项列表
   var ASSET_TYPES = [
     'component',
     'directive',
     'filter'
   ];
 
+  // 定义生命周期钩子函数列表
   var LIFECYCLE_HOOKS = [
     'beforeCreate',
     'created',
@@ -1384,6 +1388,7 @@
    * Option overwriting strategies are functions that handle
    * how to merge a parent option value and a child option
    * value into the final value.
+   * config.optionMergeStrategies 的初始化是在下面进行的
    */
   var strats = config.optionMergeStrategies;
 
@@ -1604,12 +1609,15 @@
     parentVal,
     childVal,
     vm,
-    key
+    key,
+    a
   ) {
     if (childVal && "development" !== 'production') {
       assertObjectType(key, childVal, vm);
     }
+    //  如果父属性无值则直接返回子属性
     if (!parentVal) { return childVal }
+    // 进行子属性对父属性的继承，对于子父属性中都有的属性，子属性的值会覆盖父属性的值
     var ret = Object.create(null);
     extend(ret, parentVal);
     if (childVal) { extend(ret, childVal); }
@@ -2729,7 +2737,7 @@
   /*  */
 
   var onRE = /^@|^v-on:/;
-  var dirRE = /^v-|^@|^:/;
+  var dirRE = /^v-|^@|^:|^#/;
   var forAliasRE = /([\s\S]*?)\s+(?:in|of)\s+([\s\S]*)/;
   var forIteratorRE = /,([^,\}\]]*)(?:,([^,\}\]]*))?$/;
   var stripParensRE = /^\(|\)$/g;
@@ -4082,7 +4090,7 @@
 
   /*  */
 
-  var fnExpRE = /^([\w$_]+|\([^)]*?\))\s*=>|^function\s*(?:[\w$]+)?\s*\(/;
+  var fnExpRE = /^([\w$_]+|\([^)]*?\))\s*=>|^function(?:\s+[\w$]+)?\s*\(/;
   var fnInvokeRE = /\([^)]*?\);*$/;
   var simplePathRE = /^[A-Za-z_$][\w$]*(?:\.[A-Za-z_$][\w$]*|\['[^']*?']|\["[^"]*?"]|\[\d+]|\[[A-Za-z_$][\w$]*])*$/;
 
@@ -4851,6 +4859,8 @@
             var range = node.rawAttrsMap[name];
             if (name === 'v-for') {
               checkFor(node, ("v-for=\"" + value + "\""), warn, range);
+            } else if (name === 'v-slot' || name[0] === '#') {
+              checkFunctionParameterExpression(value, (name + "=\"" + value + "\""), warn, range);
             } else if (onRE.test(name)) {
               checkEvent(value, (name + "=\"" + value + "\""), warn, range);
             } else {
@@ -4924,6 +4934,19 @@
           range
         );
       }
+    }
+  }
+
+  function checkFunctionParameterExpression (exp, text, warn, range) {
+    try {
+      new Function(exp, '');
+    } catch (e) {
+      warn(
+        "invalid function parameter expression: " + (e.message) + " in\n\n" +
+        "    " + exp + "\n\n" +
+        "  Raw expression: " + (text.trim()) + "\n",
+        range
+      );
     }
   }
 

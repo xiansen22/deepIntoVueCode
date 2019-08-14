@@ -37,22 +37,23 @@ export function validateProp (
     // 如果 propsData 中无该 prop 且 该 prop 无默认值，则值为 false
     if (absent && !hasOwn(prop, 'default')) {
       value = false
-    } else if (value === '' || value === hyphenate(key)) {
+    } else if (value === '' || value === hyphenate(key)) { // 如果 propsData 中有该 prop 且为空字符 或者 value 和 key 相同都为 boolean 
       // only cast empty string / same name to boolean if
-      // boolean has higher priority
+      // boolean has higher priority 布尔值有更高的优先级
       const stringIndex = getTypeIndex(String, prop.type)
       if (stringIndex < 0 || booleanIndex < stringIndex) {
         value = true
       }
     }
   }
-  // check default value
+  // check default value，获取默认的 prop 值
   if (value === undefined) {
     value = getPropDefaultValue(vm, prop, key)
     // since the default value is a fresh copy,
     // make sure to observe it.
     const prevShouldObserve = shouldObserve
     toggleObserving(true)
+    // 对 propValue 进行侦测
     observe(value)
     toggleObserving(prevShouldObserve)
   }
@@ -68,9 +69,10 @@ export function validateProp (
 
 /**
  * Get the default value of a prop.
+ * 获取一个 prop 默认值
  */
 function getPropDefaultValue (vm: ?Component, prop: PropOptions, key: string): any {
-  // no default, return undefined
+  // 没有默认值返回 undefined
   if (!hasOwn(prop, 'default')) {
     return undefined
   }
@@ -86,6 +88,7 @@ function getPropDefaultValue (vm: ?Component, prop: PropOptions, key: string): a
   }
   // the raw prop value was also undefined from previous render,
   // return previous default value to avoid unnecessary watcher trigger
+  // 如果已经经过 render 过程 _props[key] 上有值 
   if (vm && vm.$options.propsData &&
     vm.$options.propsData[key] === undefined &&
     vm._props[key] !== undefined
