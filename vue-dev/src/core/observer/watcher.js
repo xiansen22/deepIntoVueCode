@@ -24,7 +24,7 @@ let uid = 0
  * This is used for both the $watch() api and directives.
  */
 export default class Watcher {
-  vm: Component;
+  vm: Component; 
   expression: string;
   cb: Function;
   id: number;
@@ -44,28 +44,31 @@ export default class Watcher {
 
   constructor (
     vm: Component,
-    expOrFn: string | Function,
+    expOrFn: string | Function, // 可以是 a.b 或者 function
     cb: Function,
     options?: ?Object,
     isRenderWatcher?: boolean
   ) {
     this.vm = vm
+    // 是否是负责渲染的 watcher
     if (isRenderWatcher) {
       vm._watcher = this
     }
+    // 将这个组件上所有的 watcher 实例添加到 _watchers 上统一管理
     vm._watchers.push(this)
     // options
+    // 关于实例化 watcher 的一些配置
     if (options) {
       this.deep = !!options.deep
       this.user = !!options.user
-      this.lazy = !!options.lazy
+      this.lazy = !!options.lazy // lazy 为 true 的话 不会在初始化时触发 get 进行相关的依赖收集 
       this.sync = !!options.sync
       this.before = options.before
     } else {
       this.deep = this.user = this.lazy = this.sync = false
     }
     this.cb = cb
-    this.id = ++uid // uid for batching
+    this.id = ++uid // uid for batching 每一个 watcher 实例有自己的全局唯一 id
     this.active = true
     this.dirty = this.lazy // for lazy watchers
     this.deps = []
@@ -76,6 +79,7 @@ export default class Watcher {
       ? expOrFn.toString()
       : ''
     // parse expression for getter
+    // 解析 getter 的表达式
     if (typeof expOrFn === 'function') {
       this.getter = expOrFn
     } else {
@@ -99,10 +103,12 @@ export default class Watcher {
    * Evaluate the getter, and re-collect dependencies.
    */
   get () {
+    // 将当前的 watcher 实例作为依赖添加到 target 中
     pushTarget(this)
     let value
     const vm = this.vm
     try {
+      // 执行 getter 触发相关的数据侦测，进行依赖收集
       value = this.getter.call(vm, vm)
     } catch (e) {
       if (this.user) {

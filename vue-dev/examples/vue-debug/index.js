@@ -14,20 +14,30 @@ new Vue({
             }
         }
     },
-    data: {
-        numbers: [
-            {
-                name: 'hy'
-            }
-        ]
-    },
     directives: {
         pin: function(el){
             console.log(el);
         }
     },
     data: {
-        name: "hy"
+        name: "hy",
+        numbers: [
+            {
+                name: 'hy',
+                age: 10
+            },
+            {
+                name: 'hys',
+                age: 9
+            }
+        ]
+    },
+    computed: {
+        oldPeople: function() {
+            return this.numbers.sort((pre, next)=>{
+                return next.age - pre.age > -1;
+            })[0]
+        }
     },
     beforeCreate: function() {
       console.log('i am beforeCreate');

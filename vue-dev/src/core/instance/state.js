@@ -187,12 +187,17 @@ export function getData (data: Function, vm: Component): any {
   }
 }
 
+/**
+ * 初始化计算属性
+ */
 const computedWatcherOptions = { lazy: true }
 
 function initComputed (vm: Component, computed: Object) {
   // $flow-disable-line
+  // 定义 _computedWatchers 用以保存计算属性的 watcher 实例
   const watchers = vm._computedWatchers = Object.create(null)
   // computed properties are just getters during SSR
+  // SSR 阶段，计算属性只是个 getter
   const isSSR = isServerRendering()
 
   for (const key in computed) {
@@ -207,6 +212,7 @@ function initComputed (vm: Component, computed: Object) {
 
     if (!isSSR) {
       // create internal watcher for the computed property.
+      // 为每一个计算属性创建 watcher 实例
       watchers[key] = new Watcher(
         vm,
         getter || noop,
