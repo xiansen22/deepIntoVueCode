@@ -64,6 +64,7 @@ export function initMixin (Vue: Class<Component>) {
     // 初始化 state
     initState(vm)
     initProvide(vm) // resolve provide after data/props
+    // 执行 created 钩子函数
     callHook(vm, 'created')
 
     /* istanbul ignore if */
@@ -74,6 +75,7 @@ export function initMixin (Vue: Class<Component>) {
     }
 
     if (vm.$options.el) {
+      // $mount 会根据平台在 platforms 下对应的初始文件进行重写
       vm.$mount(vm.$options.el)
     }
   }

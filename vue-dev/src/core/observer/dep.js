@@ -16,10 +16,14 @@ export default class Dep {
   subs: Array<Watcher>;
 
   constructor () {
+    // 每一个 dep 都有自己唯一的 uid 
     this.id = uid++
     this.subs = []
   }
 
+  /**
+   * 存储 watcher 实例，以便查看收集了那些 watcher 实例
+   */
   addSub (sub: Watcher) {
     this.subs.push(sub)
   }
@@ -27,7 +31,9 @@ export default class Dep {
   removeSub (sub: Watcher) {
     remove(this.subs, sub)
   }
-
+  /**
+   * 
+   */
   depend () {
     if (Dep.target) {
       Dep.target.addDep(this)

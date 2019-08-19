@@ -19,9 +19,10 @@ Vue.prototype.$mount = function (
   el?: string | Element,
   hydrating?: boolean
 ): Component {
+  // 查询获取对应的装载元素节点
   el = el && query(el)
-
   /* istanbul ignore if */
+  // 装载元素节点不能为 <body> <html> 节点
   if (el === document.body || el === document.documentElement) {
     process.env.NODE_ENV !== 'production' && warn(
       `Do not mount Vue to <html> or <body> - mount to normal elements instead.`
@@ -31,7 +32,9 @@ Vue.prototype.$mount = function (
 
   const options = this.$options
   // resolve template/el and convert to render function
+  // 解析 template 和 el 并且对 render 函数进行重写
   if (!options.render) {
+    // 获取 template
     let template = options.template
     if (template) {
       if (typeof template === 'string') {
@@ -54,6 +57,7 @@ Vue.prototype.$mount = function (
         return this
       }
     } else if (el) {
+      // 如果没有设置 template ，则获取装载元素的 html 内容，包括装载元素节点
       template = getOuterHTML(el)
     }
     if (template) {
@@ -61,7 +65,7 @@ Vue.prototype.$mount = function (
       if (process.env.NODE_ENV !== 'production' && config.performance && mark) {
         mark('compile')
       }
-
+      // 获取 渲染函数 和 静态渲染函数
       const { render, staticRenderFns } = compileToFunctions(template, {
         outputSourceRange: process.env.NODE_ENV !== 'production',
         shouldDecodeNewlines,

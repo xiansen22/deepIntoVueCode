@@ -131,6 +131,7 @@ export function observe (value: any, asRootData: ?boolean): Observer | void {
 
 /**
  * Define a reactive property on an Object.
+ * @param { shallow } 是否做浅侦测
  */
 export function defineReactive (
   obj: Object,
@@ -140,7 +141,6 @@ export function defineReactive (
   shallow?: boolean
 ) {
   const dep = new Dep()
-
   const property = Object.getOwnPropertyDescriptor(obj, key)
   if (property && property.configurable === false) {
     return
@@ -152,12 +152,12 @@ export function defineReactive (
   if ((!getter || setter) && arguments.length === 2) {
     val = obj[key]
   }
-
   let childOb = !shallow && observe(val)
   Object.defineProperty(obj, key, {
     enumerable: true,
     configurable: true,
     get: function reactiveGetter () {
+      // 如果存在相应的 get 函数则执行相应的 get 函数来获取当前的值，否则使用原值
       const value = getter ? getter.call(obj) : val
       if (Dep.target) {
         dep.depend()

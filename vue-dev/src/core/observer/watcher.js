@@ -94,6 +94,7 @@ export default class Watcher {
         )
       }
     }
+    // 根据相应表达式获取具体的值，在此过程中触发数据侦测，完成依赖收集
     this.value = this.lazy
       ? undefined
       : this.get()
@@ -101,6 +102,7 @@ export default class Watcher {
 
   /**
    * Evaluate the getter, and re-collect dependencies.
+   * 执行 getter, 收集依赖
    */
   get () {
     // 将当前的 watcher 实例作为依赖添加到 target 中
@@ -130,11 +132,12 @@ export default class Watcher {
 
   /**
    * Add a dependency to this directive.
+   * 将 dep 保存起来，以便查看依赖来多少数据
    */
   addDep (dep: Dep) {
     const id = dep.id
     if (!this.newDepIds.has(id)) {
-      this.newDepIds.add(id)
+      this.newDepIds.add(id) 
       this.newDeps.push(dep)
       if (!this.depIds.has(id)) {
         dep.addSub(this)

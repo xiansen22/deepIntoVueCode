@@ -34,9 +34,11 @@ new Vue({
     },
     computed: {
         oldPeople: function() {
-            return this.numbers.sort((pre, next)=>{
+            const a = this.numbers.sort((pre, next)=>{
                 return next.age - pre.age > -1;
-            })[0]
+            })[0];
+            a.sex = "man";
+            return a;
         }
     },
     beforeCreate: function() {
