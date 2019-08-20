@@ -101,6 +101,7 @@ export function parse (
   const preserveWhitespace = options.preserveWhitespace !== false
   const whitespaceOption = options.whitespace
   let root
+  // 用来标记当前的父节点
   let currentParent
   let inVPre = false
   let inPre = false
@@ -203,7 +204,7 @@ export function parse (
       )
     }
   }
-
+  // 对 template 进行解析
   parseHTML(template, {
     warn,
     expectHTML: options.expectHTML,
@@ -383,10 +384,19 @@ export function parse (
         }
       }
     },
+
+    /**
+     * 处理 注释内容
+     * @param {string} text 注释内容，不包括 <!-- 和 -->
+     * @param {index} start 
+     * @param {index} end 
+     */
     comment (text: string, start, end) {
       // adding anyting as a sibling to the root node is forbidden
       // comments should still be allowed, but ignored
+      // 拒绝任何节点作为根节点的兄弟节点添加进去，即使是注释也不可以
       if (currentParent) {
+        // 生成一个 AST 节点
         const child: ASTText = {
           type: 3,
           text,

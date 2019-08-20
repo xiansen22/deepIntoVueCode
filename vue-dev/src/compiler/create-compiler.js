@@ -14,6 +14,7 @@ export function createCompilerCreator (baseCompile: Function): Function {
       options?: CompilerOptions
     ): CompiledResult {
       const finalOptions = Object.create(baseOptions)
+      console.log(baseOptions);
       const errors = []
       const tips = []
 
@@ -60,14 +61,12 @@ export function createCompilerCreator (baseCompile: Function): Function {
       }
 
       finalOptions.warn = warn
-
       const compiled = baseCompile(template.trim(), finalOptions)
       if (process.env.NODE_ENV !== 'production') {
         detectErrors(compiled.ast, warn)
       }
       compiled.errors = errors
       compiled.tips = tips
-      console.log(compiled);
       return compiled
     }
 

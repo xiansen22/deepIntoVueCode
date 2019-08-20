@@ -13,17 +13,36 @@ import { makeMap, no } from 'shared/util'
 import { isNonPhrasingTag } from 'web/compiler/util'
 import { unicodeRegExp } from 'core/util/lang'
 
-// Regular Expressions for parsing tags and attributes
+/**
+ * Regular Expressions for parsing tags and attributes
+ * 解析属性，我们需要拿到三个值（属性名、=、属性值）
+ * 这个正则表达式一共有七个捕获组，其中两个不会被获取匹配结果，剩余的五个是我们需要的信息
+ * 第一个捕获组 ([^\s"'<>\/=]+) 匹配任何非(空白符、"'<>/=)  即匹配属性名
+ * 第二个捕获组 (?:\s*(=)\s*(?:"([^"]*)"+|'([^']*)'+|([^\s"'=<>`]+)))       不会获取匹配结果
+ * 第三个捕获组 (=)  即匹配 = 
+ * 第四个捕获组 (?:"([^"]*)"+|'([^']*)'+|([^\s"'=<>`]+))  不会获取匹配结果 用来匹配 "value" 、'value'、 value(无[空白符、"、'、=、<、>])类型的属性值
+ * 第五个捕获组 "([^"]*)"+          匹配 "value"
+ * 第六个捕获组 '([^']*)'+          匹配 'value'
+ * 第七个捕获组 ([^\s"'=<>`]+))+    匹配value(无[空白符、"、'、=、<、>])类型
+ */
 const attribute = /^\s*([^\s"'<>\/=]+)(?:\s*(=)\s*(?:"([^"]*)"+|'([^']*)'+|([^\s"'=<>`]+)))?/
 const dynamicArgAttribute = /^\s*((?:v-[\w-]+:|@|:|#)\[[^=]+\][^\s"'<>\/=]*)(?:\s*(=)\s*(?:"([^"]*)"+|'([^']*)'+|([^\s"'=<>`]+)))?/
+//第一个集合确保标签名字是以26个英语字母或_打头开始，第二个集合表示标签名可以包含任意单词、下划线、-、. 
 const ncname = `[a-zA-Z_][\\-\\.0-9_a-zA-Z${unicodeRegExp.source}]*`
+// 一共两个捕获组，第二个捕获组因为使用了 ?: 所以可以匹配但是不会获取匹配结果，匹配 <div:xxx></div> 这样的数据 
 const qnameCapture = `((?:${ncname}\\:)?${ncname})`
 const startTagOpen = new RegExp(`^<${qnameCapture}`)
+// 匹配结束标签 /> 或者 >
 const startTagClose = /^\s*(\/?)>/
 const endTag = new RegExp(`^<\\/${qnameCapture}[^>]*>`)
+
+// <!DOCTYPE > 标签的正则检测
 const doctype = /^<!DOCTYPE [^>]+>/i
+
 // #7298: escape - to avoid being passed as HTML comment when inlined in page
+// 注释的正则检测
 const comment = /^<!\--/
+// 条件注释的正则检测 <![IE]>
 const conditionalComment = /^<!\[/
 
 // Special Elements (can contain anything)
@@ -51,6 +70,9 @@ function decodeAttr (value, shouldDecodeNewlines) {
   return value.replace(re, match => decodingMap[match])
 }
 
+/**
+ * 解析 html 字符串
+ */
 export function parseHTML (html, options) {
   const stack = []
   const expectHTML = options.expectHTML
@@ -58,43 +80,52 @@ export function parseHTML (html, options) {
   const canBeLeftOpenTag = options.canBeLeftOpenTag || no
   let index = 0
   let last, lastTag
+  // 循环处理
   while (html) {
     last = html
     // Make sure we're not in a plaintext content element like script/style
     if (!lastTag || !isPlainTextElement(lastTag)) {
+      // 寻找第一个 < 标志的位置
       let textEnd = html.indexOf('<')
+      // 如果是第一个位置，如果对其做一下判断
       if (textEnd === 0) {
-        // Comment:
+        // Comment: 检测是否是注释内容 完整的注释标签 <!--我是注释-->
         if (comment.test(html)) {
+          // 获取注释结束的位置
           const commentEnd = html.indexOf('-->')
-
+          // 对注释内容进行处理
           if (commentEnd >= 0) {
+            // 如果设置保留注释，则会将注释构建进 AST 语法树中
             if (options.shouldKeepComment) {
+              // 先将注释内容截取出来
               options.comment(html.substring(4, commentEnd), index, index + commentEnd + 3)
             }
+            // 对 html 字符串进行截取，对剩下未处理的字符串继续处理
             advance(commentEnd + 3)
             continue
           }
         }
 
         // http://en.wikipedia.org/wiki/Conditional_comment#Downlevel-revealed_conditional_comment
+        // 检测是否是条件注释,条件注释是不会构建进 AST 语法树，所以在 VUE 中写了条件注释也是没有用的
         if (conditionalComment.test(html)) {
           const conditionalEnd = html.indexOf(']>')
 
+          // 将条件注释内容部分截取掉，继续处理剩余的字符串
           if (conditionalEnd >= 0) {
             advance(conditionalEnd + 2)
             continue
           }
         }
 
-        // Doctype:
+        // Doctype: 截取掉 <!Doctype >标签内容
         const doctypeMatch = html.match(doctype)
         if (doctypeMatch) {
           advance(doctypeMatch[0].length)
           continue
         }
 
-        // End tag:
+        // End tag: 处理结束标签 </xxx>
         const endTagMatch = html.match(endTag)
         if (endTagMatch) {
           const curIndex = index
@@ -103,7 +134,7 @@ export function parseHTML (html, options) {
           continue
         }
 
-        // Start tag:
+        // Start tag: 处理开始标签 <xxx>
         const startTagMatch = parseStartTag()
         if (startTagMatch) {
           handleStartTag(startTagMatch)
@@ -179,40 +210,55 @@ export function parseHTML (html, options) {
   // Clean up any remaining tags
   parseEndTag()
 
+  // 对字符串进行截取
   function advance (n) {
+    // 记录当前的位置
     index += n
     html = html.substring(n)
   }
 
+  // 解析开始标签
   function parseStartTag () {
     const start = html.match(startTagOpen)
+    // 匹配到开始标签
     if (start) {
+      // 第一步只是提取到开始标签的名字和位置，并没有获取到开始标签内的属性（eg: class、data-set 等等）
       const match = {
-        tagName: start[1],
-        attrs: [],
-        start: index
+        tagName: start[1], // 标签 name （ eg: div, sapn, p 等 ）
+        attrs: [], // 属性集合
+        start: index // 在 html 字符串中是第几个位置
       }
+      // 将匹配到开始标签内容截取掉，截取掉的内容格式 （ eg: <xxx ）
       advance(start[0].length)
       let end, attr
+      // 循环处理，用以获取开始标签内的属性，这个属性可以是 普通的 html 属性，也可以是动态属性，比如 @click = xxx 或者 || :index = xxx
       while (!(end = html.match(startTagClose)) && (attr = html.match(dynamicArgAttribute) || html.match(attribute))) {
+        // 记录起始位置
         attr.start = index
+        // 截取掉匹配到的内容
         advance(attr[0].length)
+        // 记录结束位置
         attr.end = index
+        // 添加到属性 attrs 中保存起来
         match.attrs.push(attr)
       }
+      // 匹配到结束标签
       if (end) {
+        // 记录但标签
         match.unarySlash = end[1]
         advance(end[0].length)
+        // 记录开始标签的结束位置
         match.end = index
         return match
       }
     }
   }
-
+  /**
+   * 处理开始标签的匹配结果
+   */
   function handleStartTag (match) {
     const tagName = match.tagName
     const unarySlash = match.unarySlash
-
     if (expectHTML) {
       if (lastTag === 'p' && isNonPhrasingTag(tagName)) {
         parseEndTag(lastTag)
