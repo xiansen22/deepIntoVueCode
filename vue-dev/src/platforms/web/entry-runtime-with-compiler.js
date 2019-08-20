@@ -14,6 +14,7 @@ const idToTemplate = cached(id => {
   return el && el.innerHTML
 })
 
+// 初次定义是在 runtime/index
 const mount = Vue.prototype.$mount
 Vue.prototype.$mount = function (
   el?: string | Element,
@@ -65,7 +66,7 @@ Vue.prototype.$mount = function (
       if (process.env.NODE_ENV !== 'production' && config.performance && mark) {
         mark('compile')
       }
-      // 获取 渲染函数 和 静态渲染函数
+      // 获取 渲染函数 和 静态渲染函数 compileToFunctions => 代码生成器
       const { render, staticRenderFns } = compileToFunctions(template, {
         outputSourceRange: process.env.NODE_ENV !== 'production',
         shouldDecodeNewlines,

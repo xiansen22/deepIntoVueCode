@@ -4,6 +4,9 @@ import { extend } from 'shared/util'
 import { detectErrors } from './error-detector'
 import { createCompileToFunctionFn } from './to-function'
 
+/**
+ * @param {baseCompile} Function 
+ */
 export function createCompilerCreator (baseCompile: Function): Function {
   return function createCompiler (baseOptions: CompilerOptions) {
     function compile (
@@ -64,6 +67,7 @@ export function createCompilerCreator (baseCompile: Function): Function {
       }
       compiled.errors = errors
       compiled.tips = tips
+      console.log(compiled);
       return compiled
     }
 

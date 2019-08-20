@@ -75,13 +75,16 @@ export function createASTElement (
 
 /**
  * Convert HTML string to AST.
+ * 将 HTML 字符串转换成 AST 
+ * 核心原理，利用正则递归处理
  */
 export function parse (
   template: string,
   options: CompilerOptions
 ): ASTElement | void {
   warn = options.warn || baseWarn
-
+  
+  // function => 检测是否是 pre 函数
   platformIsPreTag = options.isPreTag || no
   platformMustUseProp = options.mustUseProp || no
   platformGetTagNamespace = options.getTagNamespace || no
@@ -210,6 +213,7 @@ export function parse (
     shouldDecodeNewlinesForHref: options.shouldDecodeNewlinesForHref,
     shouldKeepComment: options.comments,
     outputSourceRange: options.outputSourceRange,
+    // 处理开始标签
     start (tag, attrs, unary, start, end) {
       // check namespace.
       // inherit parent ns if there is one
@@ -296,7 +300,7 @@ export function parse (
         closeElement(element)
       }
     },
-
+    // 处理结束标签
     end (tag, start, end) {
       const element = stack[stack.length - 1]
       // pop stack

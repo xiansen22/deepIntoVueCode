@@ -16,7 +16,7 @@ export const baseOptions: CompilerOptions = {
   expectHTML: true,
   modules,
   directives,
-  isPreTag,
+  isPreTag, // Function => 查看是否是 pre 标签
   isUnaryTag,
   mustUseProp,
   canBeLeftOpenTag,

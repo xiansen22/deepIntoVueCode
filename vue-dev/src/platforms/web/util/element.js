@@ -30,7 +30,7 @@ export const isSVG = makeMap(
   'polygon,polyline,rect,switch,symbol,text,textpath,tspan,use,view',
   true
 )
-
+// 是否是 pre 标签 （被包围在 pre 元素中的文本通常会保留空格和换行符）
 export const isPreTag = (tag: ?string): boolean => tag === 'pre'
 
 export const isReservedTag = (tag: string): ?boolean => {
