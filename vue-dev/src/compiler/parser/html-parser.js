@@ -65,6 +65,7 @@ const encodedAttrWithNewLines = /&(?:lt|gt|quot|amp|#39|#10|#9);/g
 const isIgnoreNewlineTag = makeMap('pre,textarea', true)
 const shouldIgnoreFirstNewline = (tag, html) => tag && isIgnoreNewlineTag(tag) && html[0] === '\n'
 
+// 对标签属性中的字符实体进行编码
 function decodeAttr (value, shouldDecodeNewlines) {
   const re = shouldDecodeNewlines ? encodedAttrWithNewLines : encodedAttr
   return value.replace(re, match => decodingMap[match])
@@ -257,8 +258,11 @@ export function parseHTML (html, options) {
    * 处理开始标签的匹配结果
    */
   function handleStartTag (match) {
+    // 拿到标签名
     const tagName = match.tagName
+    // 是否是自闭合标签
     const unarySlash = match.unarySlash
+    // 暂解
     if (expectHTML) {
       if (lastTag === 'p' && isNonPhrasingTag(tagName)) {
         parseEndTag(lastTag)
@@ -267,13 +271,15 @@ export function parseHTML (html, options) {
         parseEndTag(tagName)
       }
     }
-
+    // 检测是否是自闭合标签
     const unary = isUnaryTag(tagName) || !!unarySlash
-
+    // 获取标签属性集合
     const l = match.attrs.length
     const attrs = new Array(l)
     for (let i = 0; i < l; i++) {
+      // 获取具体的属性名
       const args = match.attrs[i]
+      // 获取属性值
       const value = args[3] || args[4] || args[5] || ''
       const shouldDecodeNewlines = tagName === 'a' && args[1] === 'href'
         ? options.shouldDecodeNewlinesForHref
@@ -288,11 +294,13 @@ export function parseHTML (html, options) {
       }
     }
 
+    // 不是自闭合标签，需要入栈，对子元素进行收集处理
     if (!unary) {
       stack.push({ tag: tagName, lowerCasedTag: tagName.toLowerCase(), attrs: attrs, start: match.start, end: match.end })
       lastTag = tagName
     }
 
+    // 调用 options.start 处理
     if (options.start) {
       options.start(tagName, attrs, unary, match.start, match.end)
     }

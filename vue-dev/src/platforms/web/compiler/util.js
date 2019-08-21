@@ -2,6 +2,7 @@
 
 import { makeMap } from 'shared/util'
 
+// 自闭合标签集合
 export const isUnaryTag = makeMap(
   'area,base,br,col,embed,frame,hr,img,input,isindex,keygen,' +
   'link,meta,param,source,track,wbr'

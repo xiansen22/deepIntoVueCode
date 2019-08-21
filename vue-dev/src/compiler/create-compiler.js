@@ -14,7 +14,6 @@ export function createCompilerCreator (baseCompile: Function): Function {
       options?: CompilerOptions
     ): CompiledResult {
       const finalOptions = Object.create(baseOptions)
-      console.log(baseOptions);
       const errors = []
       const tips = []
 

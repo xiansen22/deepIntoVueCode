@@ -63,13 +63,13 @@ export function createASTElement (
   parent: ASTElement | void
 ): ASTElement {
   return {
-    type: 1,
-    tag,
-    attrsList: attrs,
-    attrsMap: makeAttrsMap(attrs),
+    type: 1, // 标签类型
+    tag, // 标签名字
+    attrsList: attrs, // 标签属性
+    attrsMap: makeAttrsMap(attrs), // 标签 map 数据结构 name => value
     rawAttrsMap: {},
-    parent,
-    children: []
+    parent, // 父元素
+    children: [] // 子元素
   }
 }
 
@@ -90,11 +90,9 @@ export function parse (
   platformGetTagNamespace = options.getTagNamespace || no
   const isReservedTag = options.isReservedTag || no
   maybeComponent = (el: ASTElement) => !!el.component || !isReservedTag(el.tag)
-
   transforms = pluckModuleFunction(options.modules, 'transformNode')
   preTransforms = pluckModuleFunction(options.modules, 'preTransformNode')
   postTransforms = pluckModuleFunction(options.modules, 'postTransformNode')
-
   delimiters = options.delimiters
 
   const stack = []
@@ -165,6 +163,8 @@ export function parse (
     if (element.pre) {
       inVPre = false
     }
+
+    // 检测是否是 pre 标签
     if (platformIsPreTag(element.tag)) {
       inPre = false
     }
@@ -214,7 +214,15 @@ export function parse (
     shouldDecodeNewlinesForHref: options.shouldDecodeNewlinesForHref,
     shouldKeepComment: options.comments,
     outputSourceRange: options.outputSourceRange,
-    // 处理开始标签
+
+    /**
+     * 处理开始标签
+     * @param {string} tag 标签名字
+     * @param {array} attrs 标签属性集合，内有标签名和标签值
+     * @param {boolean} unary 自闭合标签
+     * @param {number} start 开始标签在 html 模版中的开始位置
+     * @param {number} end 开始标签在 html 模版中的结束位置
+     */
     start (tag, attrs, unary, start, end) {
       // check namespace.
       // inherit parent ns if there is one
@@ -226,7 +234,10 @@ export function parse (
         attrs = guardIESVGBug(attrs)
       }
 
+      // 创建 AST 元素
       let element: ASTElement = createASTElement(tag, attrs, currentParent)
+      
+      // 如果存在命名空间，则赋值
       if (ns) {
         element.ns = ns
       }
@@ -254,6 +265,7 @@ export function parse (
         })
       }
 
+      // style 和 'text/javascript' 类型的 script 标签不会进行解析和编译
       if (isForbiddenTag(element) && !isServerRendering()) {
         element.forbidden = true
         process.env.NODE_ENV !== 'production' && warn(
@@ -265,16 +277,20 @@ export function parse (
       }
 
       // apply pre-transforms
+      // 对 input 标签进行预转换
       for (let i = 0; i < preTransforms.length; i++) {
         element = preTransforms[i](element, options) || element
       }
 
       if (!inVPre) {
+        // 处理 v-pre 标签属性
         processPre(element)
+        // 如果该标签有 v-pre 标签，那么这个标签下的所有子元素都不会进行编译处理，直接输出
         if (element.pre) {
           inVPre = true
         }
       }
+      // 是否是 pre 标签
       if (platformIsPreTag(element.tag)) {
         inPre = true
       }
@@ -282,8 +298,11 @@ export function parse (
         processRawAttrs(element)
       } else if (!element.processed) {
         // structural directives
+        // 处理 v-for 标签
         processFor(element)
+        // 处理 v-if 标签
         processIf(element)
+        // 处理 v-once 标签
         processOnce(element)
       }
 
@@ -413,6 +432,10 @@ export function parse (
   return root
 }
 
+/**
+ * 去除 v-pre 标签属性
+ * v-pre指令在模板中跳过vue的编译,直接输出原始值
+ */
 function processPre (el) {
   if (getAndRemoveAttr(el, 'v-pre') != null) {
     el.pre = true
@@ -945,6 +968,9 @@ function isTextTag (el): boolean {
   return el.tag === 'script' || el.tag === 'style'
 }
 
+/**
+ * 标签为 style 和 'text/javascript' 类型的标签不进行解析和渲染
+ */
 function isForbiddenTag (el): boolean {
   return (
     el.tag === 'style' ||
