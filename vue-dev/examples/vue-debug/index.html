@@ -13,6 +13,7 @@
 </head>
 <body>
     <div id="app" v-cloak>
+      1111
       <p>
         222
          <h1>sferg</h1>
@@ -22,6 +23,9 @@
         {{name}}
         <div v-pin>diretives</div>
         <div class = "old-people">{{oldPeople.name}}</div>
+        <ul>
+          <li v-if = 'numbers.length > 0' v-for = '(item, index, i) in numbers' :key='index'>姓名：{{item.name}}, {{index}}</li>
+        </ul>
     </div>
     <script src="../../dist/vue.js"></script>
     <script src="./index.js"></script>

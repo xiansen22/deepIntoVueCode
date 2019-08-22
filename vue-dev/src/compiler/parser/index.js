@@ -25,6 +25,7 @@ export const onRE = /^@|^v-on:/
 export const dirRE = process.env.VBIND_PROP_SHORTHAND
   ? /^v-|^@|^:|^\.|^#/
   : /^v-|^@|^:|^#/
+// 获取  x in y  或者  x of y
 export const forAliasRE = /([\s\S]*?)\s+(?:in|of)\s+([\s\S]*)/
 export const forIteratorRE = /,([^,\}\]]*)(?:,([^,\}\]]*))?$/
 const stripParensRE = /^\(|\)$/g
@@ -302,10 +303,12 @@ export function parse (
         processFor(element)
         // 处理 v-if 标签
         processIf(element)
-        // 处理 v-once 标签
+        // 处理 v-once 标签 
+        // v-once 只渲染元素和组件一次。随后的重新渲染，元素/组件及其所有的子节点将被视为静态内容并跳过。这可以用于优化更新性能。
         processOnce(element)
       }
-
+      
+      // 如果当前没有根节点，那么将当前节点设为根节点
       if (!root) {
         root = element
         if (process.env.NODE_ENV !== 'production') {
@@ -313,6 +316,7 @@ export function parse (
         }
       }
 
+      // 如果当前标签不是自闭合标签，那么把当前的父元素设为当前元素，并且入栈
       if (!unary) {
         currentParent = element
         stack.push(element)
@@ -332,7 +336,9 @@ export function parse (
       closeElement(element)
     },
 
+    // 处理字符串内容
     chars (text: string, start: number, end: number) {
+      // 字符串内容必须要有父节点
       if (!currentParent) {
         if (process.env.NODE_ENV !== 'production') {
           if (text === template) {
@@ -357,6 +363,8 @@ export function parse (
       ) {
         return
       }
+
+      // 将文本内容插入到当前父节点的自节点
       const children = currentParent.children
       if (inPre || text.trim()) {
         text = isTextTag(currentParent) ? text : decodeHTMLCached(text)
@@ -524,10 +532,12 @@ function processRef (el) {
 }
 
 export function processFor (el: ASTElement) {
-  let exp
+  let exp // exp v-for 对应的属性值, 
   if ((exp = getAndRemoveAttr(el, 'v-for'))) {
+    // 解析 v-for 标签中的 遍历属性与遍历对象
     const res = parseFor(exp)
     if (res) {
+      // 将 res 合并到 el 属性上
       extend(el, res)
     } else if (process.env.NODE_ENV !== 'production') {
       warn(
@@ -545,16 +555,33 @@ type ForParseResult = {
   iterator2?: string;
 };
 
+/**
+ * 解析 v-for 属性 提取 data 和 item 与 index
+ * v-for = '(item, index) in data' || v-for = 'item in data'
+ *  forAliasRE: /([\s\S]*?)\s+(?:in|of)\s+([\s\S]*)/
+ *  stripParensRE: /^\(|\)$/g
+ *  forIteratorRE: /,([^,\}\]]*)(?:,([^,\}\]]*))?$/
+ *  @return {
+ *    for: data,
+ *    alias: item,
+ *    iterator1: index
+ *  }
+ */
 export function parseFor (exp: string): ?ForParseResult {
+  // 获取 v-for 中 key 与 value
   const inMatch = exp.match(forAliasRE)
   if (!inMatch) return
   const res = {}
-  res.for = inMatch[2].trim()
+  // 获取  data
+  res.for = inMatch[2].trim() // data
+  // 获取 key, 并将 ( 和 ) 去掉; (item, index) => item, index
   const alias = inMatch[1].trim().replace(stripParensRE, '')
+  // 获取 index
   const iteratorMatch = alias.match(forIteratorRE)
   if (iteratorMatch) {
-    res.alias = alias.replace(forIteratorRE, '').trim()
-    res.iterator1 = iteratorMatch[1].trim()
+    // 获取 item ,原理是将 , index 替换成 '' 
+    res.alias = alias.replace(forIteratorRE, '').trim() // item
+    res.iterator1 = iteratorMatch[1].trim() // index
     if (iteratorMatch[2]) {
       res.iterator2 = iteratorMatch[2].trim()
     }
@@ -565,12 +592,13 @@ export function parseFor (exp: string): ?ForParseResult {
 }
 
 function processIf (el) {
+  // 从 attrList 中删除 v-if 并将其返回
   const exp = getAndRemoveAttr(el, 'v-if')
   if (exp) {
     el.if = exp
     addIfCondition(el, {
-      exp: exp,
-      block: el
+      exp: exp, // 表达式
+      block: el // 那个标签元素
     })
   } else {
     if (getAndRemoveAttr(el, 'v-else') != null) {
@@ -617,13 +645,17 @@ function findPrevElement (children: Array<any>): ASTElement | void {
   }
 }
 
+// 添加 if 条件
 export function addIfCondition (el: ASTElement, condition: ASTIfCondition) {
   if (!el.ifConditions) {
-    el.ifConditions = []
+    el.ifConditions = [] // 条件表达式的集合
   }
   el.ifConditions.push(condition)
 }
 
+/**
+ * 处理 v-once 指令
+ */
 function processOnce (el) {
   const once = getAndRemoveAttr(el, 'v-once')
   if (once != null) {

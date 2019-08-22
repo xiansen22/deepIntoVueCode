@@ -88,7 +88,7 @@ export function parseHTML (html, options) {
     if (!lastTag || !isPlainTextElement(lastTag)) {
       // 寻找第一个 < 标志的位置
       let textEnd = html.indexOf('<')
-      // 如果是第一个位置，如果对其做一下判断
+      // 如果是第一个位置，如果对其做一下判断, 否则的话，当前处理额的字符串为标签内的内容
       if (textEnd === 0) {
         // Comment: 检测是否是注释内容 完整的注释标签 <!--我是注释-->
         if (comment.test(html)) {
@@ -146,32 +146,41 @@ export function parseHTML (html, options) {
         }
       }
 
+      // 处理标签内的内容
       let text, rest, next
       if (textEnd >= 0) {
+        // 将标签内的内容截取出去
         rest = html.slice(textEnd)
+        // 寻找标签内容的结束位置
         while (
           !endTag.test(rest) &&
           !startTagOpen.test(rest) &&
           !comment.test(rest) &&
           !conditionalComment.test(rest)
-        ) {
+        ) { 
+          // 如果剩余的内容既不是 开始标签，也不是 结束标签，也不是注释，也不是条件注释
+          //（因为 以 < 开始的内容 可以是开始标签、结束标签、注释、条件注释、字符串内容）
           // < in plain text, be forgiving and treat it as text
+          // 从 < 后查看是否还有 < 
           next = rest.indexOf('<', 1)
           if (next < 0) break
           textEnd += next
           rest = html.slice(textEnd)
         }
+        // 截取出标签内的字符串内容
         text = html.substring(0, textEnd)
       }
-
+      
       if (textEnd < 0) {
         text = html
       }
 
+      // 如果存在 text ，则对 html 字符串进行截取
       if (text) {
         advance(text.length)
       }
 
+      // 对文本内容进行处理
       if (options.chars && text) {
         options.chars(text, index - text.length, index)
       }
