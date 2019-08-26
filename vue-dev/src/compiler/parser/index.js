@@ -366,7 +366,8 @@ export function parse (
 
       // 将文本内容插入到当前父节点的自节点
       const children = currentParent.children
-      if (inPre || text.trim()) {
+      if (inPre || text.trim()) { // 如果当前标签是 pre 标签或者 text 不为空
+        // 如果当前标签是 script 或者 style ,则直接使用 text 否则需要对 text 进行相关转译
         text = isTextTag(currentParent) ? text : decodeHTMLCached(text)
       } else if (!children.length) {
         // remove the whitespace-only node right after an opening tag
@@ -382,6 +383,8 @@ export function parse (
       } else {
         text = preserveWhitespace ? ' ' : ''
       }
+
+      // 对文本内容进行处理
       if (text) {
         if (!inPre && whitespaceOption === 'condense') {
           // condense consecutive whitespaces into single space
@@ -389,16 +392,17 @@ export function parse (
         }
         let res
         let child: ?ASTNode
+        // 如果不是 pre 标签内的内容并且使用了模版语法
         if (!inVPre && text !== ' ' && (res = parseText(text, delimiters))) {
           child = {
-            type: 2,
-            expression: res.expression,
+            type: 2, // 带模版语法的文本节点的类型为 2
+            expression: res.expression, // 文本内容上的模版语法表达式
             tokens: res.tokens,
             text
           }
         } else if (text !== ' ' || !children.length || children[children.length - 1].text !== ' ') {
           child = {
-            type: 3,
+            type: 3, // 纯文本节点的类型为 3
             text
           }
         }
@@ -996,6 +1000,7 @@ function makeAttrsMap (attrs: Array<Object>): Object {
 }
 
 // for script (e.g. type="x/template") or style, do not decode content
+// 查看是否是 script 或者 style 标签，对其内容并不编译
 function isTextTag (el): boolean {
   return el.tag === 'script' || el.tag === 'style'
 }

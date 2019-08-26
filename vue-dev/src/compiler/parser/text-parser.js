@@ -3,6 +3,7 @@
 import { cached } from 'shared/util'
 import { parseFilters } from './filter-parser'
 
+// 匹配模版语法 {{xxxx}}
 const defaultTagRE = /\{\{((?:.|\r?\n)+?)\}\}/g
 const regexEscapeRE = /[-.*+?^${}()|[\]\/\\]/g
 
@@ -22,17 +23,23 @@ export function parseText (
   delimiters?: [string, string]
 ): TextParseResult | void {
   const tagRE = delimiters ? buildRegex(delimiters) : defaultTagRE
+  // 对于
   if (!tagRE.test(text)) {
     return
   }
   const tokens = []
   const rawTokens = []
+  // 上一次匹配到的位置
   let lastIndex = tagRE.lastIndex = 0
   let match, index, tokenValue
+  // 循环匹配将 text 中所有的模版语法提取出来，一次循环
   while ((match = tagRE.exec(text))) {
+    // index : 匹配到的开始位置
     index = match.index
     // push text token
+    // 如果  index > lastIndex === true 则证明 模版语法前面有 其他文本内容，需要将其保存起来
     if (index > lastIndex) {
+      // 分割其他内容
       rawTokens.push(tokenValue = text.slice(lastIndex, index))
       tokens.push(JSON.stringify(tokenValue))
     }
