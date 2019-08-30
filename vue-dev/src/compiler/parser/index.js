@@ -142,7 +142,8 @@ export function parse (
     }
 
     if (currentParent && !element.forbidden) {
-      // 当前元素有 elseif 或者 else 属性
+      // 当前元素有 elseif 或者 else 属性，
+      // 如果存在，则elseif 或者 else 不会添加到父节点的 children 中，则会保存到 if 节点上 ifConditions.block 中
       if (element.elseif || element.else) {
         processIfConditions(element, currentParent)
       } else {
@@ -856,8 +857,10 @@ function processAttrs (el) {
   for (i = 0, l = list.length; i < l; i++) {
     name = rawName = list[i].name
     value = list[i].value
+    // 检测节点是否使用了动态绑定
     if (dirRE.test(name)) {
       // mark element as dynamic
+      // 标记节点为一个动态节点
       el.hasBindings = true
       // modifiers
       modifiers = parseModifiers(name.replace(dirRE, ''))

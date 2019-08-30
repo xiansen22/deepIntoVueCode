@@ -23,8 +23,10 @@ export function optimize (root: ?ASTElement, options: CompilerOptions) {
   isStaticKey = genStaticKeysCached(options.staticKeys || '') // options.staticKeys => staticClass,staticStyle
   isPlatformReservedTag = options.isReservedTag || no // 是否是平台的保留标签
   // first pass: mark all non-static nodes.
+  // 标记静态节点
   markStatic(root)
   // second pass: mark static roots.
+  // 标记根静态节点
   markStaticRoots(root, false)
 }
 
@@ -35,13 +37,14 @@ function genStaticKeys (keys: string): Function {
   )
 }
 
-// 递归 ast 语法树中的节点是否是静态节点
+// 递归标记 ast 语法树中的节点是否是静态节点
 function markStatic (node: ASTNode) {
   node.static = isStatic(node)
   if (node.type === 1) {
     // do not make component slot content static. this avoids
     // 1. components not able to mutate slot nodes
     // 2. static slot content fails for hot-reloading
+    // 非平台保留标签，不是 slot 标签，没有使用 inline-template
     if (
       !isPlatformReservedTag(node.tag) &&
       node.tag !== 'slot' &&
@@ -49,13 +52,18 @@ function markStatic (node: ASTNode) {
     ) {
       return
     }
+
+    // 判断子节点是否是静态节点
     for (let i = 0, l = node.children.length; i < l; i++) {
       const child = node.children[i]
       markStatic(child)
+      // 如果存在子节点不是静态节点，那么父节点也不是静态节点
       if (!child.static) {
         node.static = false
       }
     }
+
+    // 因为 else-if else 节点不存在父节点中，而是保存在 node.ifConditions[i].block 中，所以还需要对其进行判断标记
     if (node.ifConditions) {
       for (let i = 1, l = node.ifConditions.length; i < l; i++) {
         const block = node.ifConditions[i].block
@@ -68,8 +76,9 @@ function markStatic (node: ASTNode) {
   }
 }
 
+// 设置静态根节点
 function markStaticRoots (node: ASTNode, isInFor: boolean) {
-  // 节点必须是元素节点 才能对子节点进行检查
+  // 节点必须是元素节点
   if (node.type === 1) {
     if (node.static || node.once) {
       node.staticInFor = isInFor
@@ -77,6 +86,8 @@ function markStaticRoots (node: ASTNode, isInFor: boolean) {
     // For a node to qualify as a static root, it should have children that
     // are not just static text. Otherwise the cost of hoisting out will
     // outweigh the benefits and it's better off to just always render it fresh.
+    // 作为一个合格的静态根节点，它必须有子节点，这个子节点不能是只有一个静态文本的子节点，否则优化的成本大于收益
+    // 定义静态跟节点：节点为静态节点，且存在子节点
     if (node.static && node.children.length && !(
       node.children.length === 1 &&
       node.children[0].type === 3
@@ -86,6 +97,7 @@ function markStaticRoots (node: ASTNode, isInFor: boolean) {
     } else {
       node.staticRoot = false
     }
+
     if (node.children) {
       for (let i = 0, l = node.children.length; i < l; i++) {
         markStaticRoots(node.children[i], isInFor || !!node.for)
