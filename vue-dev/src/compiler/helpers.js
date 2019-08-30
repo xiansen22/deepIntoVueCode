@@ -163,10 +163,13 @@ export function getBindingAttr (
   name: string,
   getStatic?: boolean
 ): ?string {
+  // 指令有两种使用形式 :key 或者 v-bind:key
   const dynamicValue =
     getAndRemoveAttr(el, ':' + name) ||
     getAndRemoveAttr(el, 'v-bind:' + name)
+  // 拿到动态绑定的值
   if (dynamicValue != null) {
+    // 处理值上有没有使用 filter 
     return parseFilters(dynamicValue)
   } else if (getStatic !== false) {
     const staticValue = getAndRemoveAttr(el, name)

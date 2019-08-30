@@ -114,7 +114,9 @@ export function parse (
   }
 
   function closeElement (element) {
+    // 将 element 中子节点为空白字符串去除
     trimEndingWhitespace(element)
+    // 非 v-pre 标签下的内容且没有被处理，需要对节点进行处理
     if (!inVPre && !element.processed) {
       element = processElement(element, options)
     }
@@ -138,7 +140,9 @@ export function parse (
         )
       }
     }
+
     if (currentParent && !element.forbidden) {
+      // 当前元素有 elseif 或者 else 属性
       if (element.elseif || element.else) {
         processIfConditions(element, currentParent)
       } else {
@@ -149,6 +153,8 @@ export function parse (
           const name = element.slotTarget || '"default"'
           ;(currentParent.scopedSlots || (currentParent.scopedSlots = {}))[name] = element
         }
+
+        // 进行父子级绑定
         currentParent.children.push(element)
         element.parent = currentParent
       }
@@ -161,11 +167,12 @@ export function parse (
     trimEndingWhitespace(element)
 
     // check pre state
+    // 检查 v-pre，关闭 inVPre
     if (element.pre) {
       inVPre = false
     }
 
-    // 检测是否是 pre 标签
+    // 检测是否是 pre 标签 关闭 inPre
     if (platformIsPreTag(element.tag)) {
       inPre = false
     }
@@ -175,8 +182,12 @@ export function parse (
     }
   }
 
+  /**
+   * 将 el 文本子节点为空字符串去除
+   */
   function trimEndingWhitespace (el) {
     // remove trailing whitespace node
+    // 如果不是 pre 标签内的内容
     if (!inPre) {
       let lastNode
       while (
@@ -326,9 +337,11 @@ export function parse (
     },
     // 处理结束标签
     end (tag, start, end) {
+      // 取出最近推入栈的元素
       const element = stack[stack.length - 1]
-      // pop stack
+      // pop stack，将其从栈中去除
       stack.length -= 1
+      // 当前元素重制
       currentParent = stack[stack.length - 1]
       if (process.env.NODE_ENV !== 'production' && options.outputSourceRange) {
         element.end = end
@@ -392,7 +405,7 @@ export function parse (
         }
         let res
         let child: ?ASTNode
-        // 如果不是 pre 标签内的内容并且使用了模版语法
+        // 如果不是 pre 标签内的内容且不为空并且使用了模版语法
         if (!inVPre && text !== ' ' && (res = parseText(text, delimiters))) {
           child = {
             type: 2, // 带模版语法的文本节点的类型为 2
@@ -406,6 +419,8 @@ export function parse (
             text
           }
         }
+
+        // 将处理好的文本内容放到子节点中
         if (child) {
           if (process.env.NODE_ENV !== 'production' && options.outputSourceRange) {
             child.start = start
@@ -479,6 +494,7 @@ export function processElement (
   element: ASTElement,
   options: CompilerOptions
 ) {
+  // 获取 :key 的表达式 
   processKey(element)
 
   // determine whether this is a plain element after
@@ -488,7 +504,7 @@ export function processElement (
     !element.scopedSlots &&
     !element.attrsList.length
   )
-
+  // 获取 ref 的表达式
   processRef(element)
   processSlotContent(element)
   processSlotOutlet(element)
@@ -501,6 +517,7 @@ export function processElement (
 }
 
 function processKey (el) {
+  // 获取 key 的动态绑定值的表达式
   const exp = getBindingAttr(el, 'key')
   if (exp) {
     if (process.env.NODE_ENV !== 'production') {
@@ -523,11 +540,13 @@ function processKey (el) {
         }
       }
     }
+    // 将 key 的表达式绑定到 el.key 属性上
     el.key = exp
   }
 }
 
 function processRef (el) {
+  // 获取 ref 的表达式
   const ref = getBindingAttr(el, 'ref')
   if (ref) {
     el.ref = ref
@@ -616,6 +635,7 @@ function processIf (el) {
 }
 
 function processIfConditions (el, parent) {
+  // 拿到 currentParent 中位于 el 前一位的元素
   const prev = findPrevElement(parent.children)
   if (prev && prev.if) {
     addIfCondition(prev, {
@@ -669,8 +689,10 @@ function processOnce (el) {
 
 // handle content being passed to a component as slot,
 // e.g. <template slot="xxx">, <div slot-scope="xxx">
+// 解析模版内容
 function processSlotContent (el) {
   let slotScope
+  // 先处理标签类型为 template 
   if (el.tag === 'template') {
     slotScope = getAndRemoveAttr(el, 'scope')
     /* istanbul ignore if */
@@ -685,7 +707,7 @@ function processSlotContent (el) {
       )
     }
     el.slotScope = slotScope || getAndRemoveAttr(el, 'slot-scope')
-  } else if ((slotScope = getAndRemoveAttr(el, 'slot-scope'))) {
+  } else if ((slotScope = getAndRemoveAttr(el, 'slot-scope'))) { // 处理使用 slot-scope 指令的标签
     /* istanbul ignore if */
     if (process.env.NODE_ENV !== 'production' && el.attrsMap['v-for']) {
       warn(

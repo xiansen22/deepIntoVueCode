@@ -2,6 +2,7 @@
 
 const validDivisionCharRE = /[\w).+\-_$\]]/
 
+// name | xxx
 export function parseFilters (exp: string): string {
   let inSingle = false
   let inDouble = false
@@ -17,14 +18,20 @@ export function parseFilters (exp: string): string {
     prev = c
     c = exp.charCodeAt(i)
     if (inSingle) {
+      // 0x27 = ' 0x5C = \
       if (c === 0x27 && prev !== 0x5C) inSingle = false
     } else if (inDouble) {
+      // 0x22 = "" 0x5C = \
       if (c === 0x22 && prev !== 0x5C) inDouble = false
     } else if (inTemplateString) {
+      // 0x60 = ` 0x5C = \
       if (c === 0x60 && prev !== 0x5C) inTemplateString = false
     } else if (inRegex) {
+      // 0x2f = / 0x5C = \
       if (c === 0x2f && prev !== 0x5C) inRegex = false
     } else if (
+      // 检测是否是过滤字符 | 且大中小括号分别配对 {} [] ()
+      // 0x7C = | 
       c === 0x7C && // pipe
       exp.charCodeAt(i + 1) !== 0x7C &&
       exp.charCodeAt(i - 1) !== 0x7C &&

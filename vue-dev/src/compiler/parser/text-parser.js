@@ -27,8 +27,8 @@ export function parseText (
   if (!tagRE.test(text)) {
     return
   }
-  const tokens = []
-  const rawTokens = []
+  const tokens = [] // 放入的都是字符串
+  const rawTokens = [] // 放入的是原始值
   // 上一次匹配到的位置
   let lastIndex = tagRE.lastIndex = 0
   let match, index, tokenValue
@@ -43,16 +43,18 @@ export function parseText (
       rawTokens.push(tokenValue = text.slice(lastIndex, index))
       tokens.push(JSON.stringify(tokenValue))
     }
-    // tag token
+    // tag token, 针对 模版语法中使用了 filter | 进行处理
     const exp = parseFilters(match[1].trim())
     tokens.push(`_s(${exp})`)
     rawTokens.push({ '@binding': exp })
     lastIndex = index + match[0].length
   }
+  // 将文本内容 }} 后面的内容取出
   if (lastIndex < text.length) {
     rawTokens.push(tokenValue = text.slice(lastIndex))
     tokens.push(JSON.stringify(tokenValue))
   }
+
   return {
     expression: tokens.join('+'),
     tokens: rawTokens

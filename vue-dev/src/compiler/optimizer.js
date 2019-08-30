@@ -20,8 +20,8 @@ const genStaticKeysCached = cached(genStaticKeys)
  */
 export function optimize (root: ?ASTElement, options: CompilerOptions) {
   if (!root) return
-  isStaticKey = genStaticKeysCached(options.staticKeys || '')
-  isPlatformReservedTag = options.isReservedTag || no
+  isStaticKey = genStaticKeysCached(options.staticKeys || '') // options.staticKeys => staticClass,staticStyle
+  isPlatformReservedTag = options.isReservedTag || no // 是否是平台的保留标签
   // first pass: mark all non-static nodes.
   markStatic(root)
   // second pass: mark static roots.
@@ -35,6 +35,7 @@ function genStaticKeys (keys: string): Function {
   )
 }
 
+// 递归 ast 语法树中的节点是否是静态节点
 function markStatic (node: ASTNode) {
   node.static = isStatic(node)
   if (node.type === 1) {
@@ -68,6 +69,7 @@ function markStatic (node: ASTNode) {
 }
 
 function markStaticRoots (node: ASTNode, isInFor: boolean) {
+  // 节点必须是元素节点 才能对子节点进行检查
   if (node.type === 1) {
     if (node.static || node.once) {
       node.staticInFor = isInFor
@@ -97,23 +99,28 @@ function markStaticRoots (node: ASTNode, isInFor: boolean) {
   }
 }
 
+/**
+ * 静态节点的判断：未使用动态指令、纯文本、使用 v-pre 标签
+ * 静态节点是指在 ast 语法树中永远不会发生变化的节点，在第一次渲染之后每一次渲染都不会为其创建新节点，patch 过程也会跳过
+ */
 function isStatic (node: ASTNode): boolean {
-  if (node.type === 2) { // expression
+  if (node.type === 2) { // 带变量的动态文本节点  expression 
     return false
   }
-  if (node.type === 3) { // text
+  if (node.type === 3) { // 不带变量的纯文本节点 text
     return true
   }
+  // node.pre => v-pre
   return !!(node.pre || (
-    !node.hasBindings && // no dynamic bindings
-    !node.if && !node.for && // not v-if or v-for or v-else
-    !isBuiltInTag(node.tag) && // not a built-in
-    isPlatformReservedTag(node.tag) && // not a component
-    !isDirectChildOfTemplateFor(node) &&
-    Object.keys(node).every(isStaticKey)
+    !node.hasBindings && // no dynamic bindings 没有动态绑定
+    !node.if && !node.for && // not v-if or v-for or v-else 没有绑定 if else for 指令
+    !isBuiltInTag(node.tag) && // not a built-in 不是内置标签 component solt
+    isPlatformReservedTag(node.tag) && // not a component 是平台保留标签，不能是组件 eg: 保留标签: <div></div> 组件标签 <App />
+    !isDirectChildOfTemplateFor(node) && // 当前节点的父节点不能是带 v-for 指令的 template 标签
+    Object.keys(node).every(isStaticKey) // 节点中不能存在动态节点才有的节点
   ))
 }
-
+// 检查节点的父节点是否是带 v-for 的 template 的节点
 function isDirectChildOfTemplateFor (node: ASTElement): boolean {
   while (node.parent) {
     node = node.parent

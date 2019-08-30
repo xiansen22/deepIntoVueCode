@@ -32,6 +32,13 @@ new Vue({
             }
         ]
     },
+    filters: {
+      capitalize: function (value) {
+        if (!value) return ''
+        value = value.toString()
+        return value.charAt(0).toUpperCase() + value.slice(1)
+      }
+    },
     computed: {
         oldPeople: function() {
             const a = this.numbers.sort((pre, next)=>{

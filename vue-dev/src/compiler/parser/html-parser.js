@@ -130,7 +130,9 @@ export function parseHTML (html, options) {
         const endTagMatch = html.match(endTag)
         if (endTagMatch) {
           const curIndex = index
+          // 对 html 文本进行截取
           advance(endTagMatch[0].length)
+          // 解析结束标签
           parseEndTag(endTagMatch[1], curIndex, index)
           continue
         }
@@ -321,6 +323,7 @@ export function parseHTML (html, options) {
     if (end == null) end = index
 
     // Find the closest opened tag of the same type
+    // 在 stack 上找到最近的与结束标签相同的标签的位置
     if (tagName) {
       lowerCasedTagName = tagName.toLowerCase()
       for (pos = stack.length - 1; pos >= 0; pos--) {
@@ -332,7 +335,6 @@ export function parseHTML (html, options) {
       // If no tag name is provided, clean shop
       pos = 0
     }
-
     if (pos >= 0) {
       // Close all the open elements, up the stack
       for (let i = stack.length - 1; i >= pos; i--) {
@@ -345,12 +347,14 @@ export function parseHTML (html, options) {
             { start: stack[i].start, end: stack[i].end }
           )
         }
+        // 交由 options.end 处理
         if (options.end) {
           options.end(stack[i].tag, start, end)
         }
       }
 
       // Remove the open elements from the stack
+      // 从 stack 上去除这部分标签
       stack.length = pos
       lastTag = pos && stack[pos - 1].tag
     } else if (lowerCasedTagName === 'br') {

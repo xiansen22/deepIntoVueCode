@@ -14,6 +14,7 @@ export const createCompiler = createCompilerCreator(function baseCompile (
 ): CompiledResult {
   // 利用模版构建 AST 语法树
   const ast = parse(template.trim(), options)
+  // 优化器，标记所有静态节点和根节点
   if (options.optimize !== false) {
     optimize(ast, options)
   }
