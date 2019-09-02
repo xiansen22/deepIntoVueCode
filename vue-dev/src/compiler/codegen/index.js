@@ -6,6 +6,12 @@ import { camelize, no, extend } from 'shared/util'
 import { baseWarn, pluckModuleFunction } from '../helpers'
 import { emptySlotScopeToken } from '../parser/index'
 
+/**
+ * _c => createElement 元素节点
+ * _v => createTextVNode 文本节点
+ * _e => createEmptyVNode 注释节点
+ */
+
 type TransformFunction = (el: ASTElement, code: string) => string;
 type DataGenFunction = (el: ASTElement) => string;
 type DirectiveFunction = (el: ASTElement, dir: ASTDirective, warn: Function) => boolean;
@@ -40,6 +46,7 @@ export type CodegenResult = {
   staticRenderFns: Array<string>
 };
 
+// 动态节点和静态节点是分开生成渲染的
 export function generate (
   ast: ASTElement | void,
   options: CompilerOptions
@@ -52,14 +59,16 @@ export function generate (
   }
 }
 
+// 创建一个元素节点渲染函数
 export function genElement (el: ASTElement, state: CodegenState): string {
   if (el.parent) {
     el.pre = el.pre || el.parent.pre
   }
-
+  
+  // 创建静态跟节点的渲染函数
   if (el.staticRoot && !el.staticProcessed) {
     return genStatic(el, state)
-  } else if (el.once && !el.onceProcessed) {
+  } else if (el.once && !el.onceProcessed) { // v-once 只渲染元素和组件一次，随后的渲染作为静态节点并跳过
     return genOnce(el, state)
   } else if (el.for && !el.forProcessed) {
     return genFor(el, state)
@@ -79,7 +88,6 @@ export function genElement (el: ASTElement, state: CodegenState): string {
       if (!el.plain || (el.pre && state.maybeComponent(el))) {
         data = genData(el, state)
       }
-
       const children = el.inlineTemplate ? null : genChildren(el, state, true)
       code = `_c('${el.tag}'${
         data ? `,${data}` : '' // data
@@ -306,12 +314,17 @@ export function genData (el: ASTElement, state: CodegenState): string {
   return data
 }
 
+/**
+ * 指令代码生成器
+ */
 function genDirectives (el: ASTElement, state: CodegenState): string | void {
+  // 获取 ast 节点上相关的指令属性
   const dirs = el.directives
   if (!dirs) return
   let res = 'directives:['
   let hasRuntime = false
   let i, l, dir, needRuntime
+  // 遍历相关指令属性 
   for (i = 0, l = dirs.length; i < l; i++) {
     dir = dirs[i]
     needRuntime = true

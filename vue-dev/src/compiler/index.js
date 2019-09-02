@@ -18,6 +18,7 @@ export const createCompiler = createCompilerCreator(function baseCompile (
   if (options.optimize !== false) {
     optimize(ast, options)
   }
+  // 代码生成器
   const code = generate(ast, options)
   return {
     ast,

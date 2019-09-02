@@ -30,6 +30,9 @@ export function optimize (root: ?ASTElement, options: CompilerOptions) {
   markStaticRoots(root, false)
 }
 
+/**
+ * 静态节点拥有的属性，不含动态节点包含的属性
+ */
 function genStaticKeys (keys: string): Function {
   return makeMap(
     'type,tag,attrsList,attrsMap,plain,parent,children,attrs,start,end,rawAttrsMap' +
@@ -67,6 +70,7 @@ function markStatic (node: ASTNode) {
     if (node.ifConditions) {
       for (let i = 1, l = node.ifConditions.length; i < l; i++) {
         const block = node.ifConditions[i].block
+        // 进行递归标记
         markStatic(block)
         if (!block.static) {
           node.static = false
@@ -98,11 +102,13 @@ function markStaticRoots (node: ASTNode, isInFor: boolean) {
       node.staticRoot = false
     }
 
+    // 对子节点进行标记 
     if (node.children) {
       for (let i = 0, l = node.children.length; i < l; i++) {
         markStaticRoots(node.children[i], isInFor || !!node.for)
       }
     }
+    // 对于使用 v-if 的节点，标记其 else elseif 的兄弟节点
     if (node.ifConditions) {
       for (let i = 1, l = node.ifConditions.length; i < l; i++) {
         markStaticRoots(node.ifConditions[i].block, isInFor)
@@ -129,7 +135,7 @@ function isStatic (node: ASTNode): boolean {
     !isBuiltInTag(node.tag) && // not a built-in 不是内置标签 component solt
     isPlatformReservedTag(node.tag) && // not a component 是平台保留标签，不能是组件 eg: 保留标签: <div></div> 组件标签 <App />
     !isDirectChildOfTemplateFor(node) && // 当前节点的父节点不能是带 v-for 指令的 template 标签
-    Object.keys(node).every(isStaticKey) // 节点中不能存在动态节点才有的节点
+    Object.keys(node).every(isStaticKey) // 静态节点节点中不能存在动态节点才有的节点
   ))
 }
 // 检查节点的父节点是否是带 v-for 的 template 的节点
