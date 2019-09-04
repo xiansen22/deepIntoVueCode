@@ -9,6 +9,9 @@ type CompiledFunctionResult = {
   staticRenderFns: Array<Function>;
 };
 
+/**
+ * 将字符串包装成函数
+ */
 function createFunction (code, errors) {
   try {
     return new Function(code)
@@ -21,6 +24,7 @@ function createFunction (code, errors) {
 export function createCompileToFunctionFn (compile: Function): Function {
   const cache = Object.create(null)
 
+  // 由 entry-runtime-with-compiler 调用返回 { render, staticRenderFns }
   return function compileToFunctions (
     template: string,
     options?: CompilerOptions,
@@ -55,7 +59,6 @@ export function createCompileToFunctionFn (compile: Function): Function {
     if (cache[key]) {
       return cache[key]
     }
-
     // compile
     const compiled = compile(template, options)
 
@@ -90,7 +93,9 @@ export function createCompileToFunctionFn (compile: Function): Function {
     // turn code into functions
     const res = {}
     const fnGenErrors = []
+    // 将 render 由字符串转变为函数
     res.render = createFunction(compiled.render, fnGenErrors)
+    // 将 staticRenderFns 中的字符串转变为函数
     res.staticRenderFns = compiled.staticRenderFns.map(code => {
       return createFunction(code, fnGenErrors)
     })
@@ -108,7 +113,6 @@ export function createCompileToFunctionFn (compile: Function): Function {
         )
       }
     }
-
     return (cache[key] = res)
   }
 }

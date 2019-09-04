@@ -31,7 +31,7 @@ export class CodegenState {
     this.options = options
     this.warn = options.warn || baseWarn
     this.transforms = pluckModuleFunction(options.modules, 'transformCode')
-    this.dataGenFns = pluckModuleFunction(options.modules, 'genData')
+    this.dataGenFns = pluckModuleFunction(options.modules, 'genData') // 添加 staticClass  class
     this.directives = extend(extend({}, baseDirectives), options.directives)
     const isReservedTag = options.isReservedTag || no
     this.maybeComponent = (el: ASTElement) => !!el.component || !isReservedTag(el.tag)
@@ -53,9 +53,11 @@ export function generate (
 ): CodegenResult {
   const state = new CodegenState(options)
   const code = ast ? genElement(ast, state) : '_c("div")'
+  console.log(state.staticRenderFns)
+  console.log(code);
   return {
     render: `with(this){return ${code}}`,
-    staticRenderFns: state.staticRenderFns
+    staticRenderFns: state.staticRenderFns // 静态节点的渲染函数
   }
 }
 
@@ -86,11 +88,11 @@ export function genElement (el: ASTElement, state: CodegenState): string {
     } else {
       let data
       if (!el.plain || (el.pre && state.maybeComponent(el))) {
-        data = genData(el, state)
+        data = genData(el, state) // 指令属性的集合
       }
       const children = el.inlineTemplate ? null : genChildren(el, state, true)
       code = `_c('${el.tag}'${
-        data ? `,${data}` : '' // data
+        data ? `,${data}` : '' // _c(div, children) || _c(div, {}, children)
       }${
         children ? `,${children}` : '' // children
       })`
@@ -116,7 +118,7 @@ function genStatic (el: ASTElement, state: CodegenState): string {
   state.staticRenderFns.push(`with(this){return ${genElement(el, state)}}`)
   state.pre = originalPreState
   return `_m(${
-    state.staticRenderFns.length - 1
+    state.staticRenderFns.length - 1 // 记录该静态节点的在 staticRenderFns 中的位置
   }${
     el.staticInFor ? ',true' : ''
   })`
@@ -224,6 +226,9 @@ export function genFor (
     '})'
 }
 
+/**
+ * 对 节点上的指令、属性进行不同的归类处理
+ */
 export function genData (el: ASTElement, state: CodegenState): string {
   let data = '{'
 
@@ -535,6 +540,9 @@ function needsNormalization (el: ASTElement): boolean {
   return el.for !== undefined || el.tag === 'template' || el.tag === 'slot'
 }
 
+/**
+ * 根据不同的节点类型，调用不同方法
+ */
 function genNode (node: ASTNode, state: CodegenState): string {
   if (node.type === 1) {
     return genElement(node, state)

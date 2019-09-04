@@ -164,8 +164,10 @@ export function mountComponent (
       }
     }
   }
+  // 执行挂载前钩子函数
   callHook(vm, 'beforeMount')
 
+  // 定义更新方法
   let updateComponent
   /* istanbul ignore if */
   if (process.env.NODE_ENV !== 'production' && config.performance && mark) {

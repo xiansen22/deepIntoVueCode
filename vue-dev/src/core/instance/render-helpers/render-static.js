@@ -15,11 +15,13 @@ export function renderStatic (
     return tree
   }
   // otherwise, render a fresh tree.
+  // 根据 index 从 staticRenderFns 中取出对应的代码生成方法
   tree = cached[index] = this.$options.staticRenderFns[index].call(
     this._renderProxy,
     null,
     this // for render fns generated for functional component templates
   )
+  // 对生成的 vnode 进行静态标记
   markStatic(tree, `__static__${index}`, false)
   return tree
 }

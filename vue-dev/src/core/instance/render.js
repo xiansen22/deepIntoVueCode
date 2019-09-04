@@ -9,7 +9,7 @@ import {
 } from '../util/index'
 
 import { createElement } from '../vdom/create-element'
-import { installRenderHelpers } from './render-helpers/index'
+import { installRenderHelpers } from './render-helpers/index' // 定义了 _v、_s 等等方法
 import { resolveSlots } from './render-helpers/resolve-slots'
 import { normalizeScopedSlots } from '../vdom/helpers/normalize-scoped-slots'
 import VNode, { createEmptyVNode } from '../vdom/vnode'
@@ -28,7 +28,7 @@ export function initRender (vm: Component) {
   // so that we get proper render context inside it.
   // args order: tag, data, children, normalizationType, alwaysNormalize
   // internal version is used by render functions compiled from templates
-  vm._c = (a, b, c, d) => createElement(vm, a, b, c, d, false)
+  vm._c = (a, b, c, d) => createElement(vm, a, b, c, d, false) // context, tagName, attrs, children
   // normalization is always applied for the public version, used in
   // user-written render functions.
   vm.$createElement = (a, b, c, d) => createElement(vm, a, b, c, d, true)
@@ -68,8 +68,8 @@ export function renderMixin (Vue: Class<Component>) {
 
   Vue.prototype._render = function (): VNode {
     const vm: Component = this
+    // 拿到渲染函数
     const { render, _parentVnode } = vm.$options
-
     if (_parentVnode) {
       vm.$scopedSlots = normalizeScopedSlots(
         _parentVnode.data.scopedSlots,

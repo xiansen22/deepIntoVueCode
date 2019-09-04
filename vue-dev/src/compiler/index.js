@@ -23,6 +23,6 @@ export const createCompiler = createCompilerCreator(function baseCompile (
   return {
     ast,
     render: code.render,
-    staticRenderFns: code.staticRenderFns
+    staticRenderFns: code.staticRenderFns // 数组
   }
 })
