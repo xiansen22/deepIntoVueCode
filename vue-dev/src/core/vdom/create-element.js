@@ -25,14 +25,24 @@ const ALWAYS_NORMALIZE = 2
 
 // wrapper function for providing a more flexible interface
 // without getting yelled at by flow
+/**
+ * 生成一个元素节点
+ * @param {Component} context 组件上下文
+ * @param {any} tag 标签名称
+ * @param {any} data 属性相关 
+ * @param {any} children 子节点
+ * @param {any} normalizationType 
+ * @param {boolean} alwaysNormalize 
+ */
 export function createElement (
   context: Component,
   tag: any,
   data: any,
-  children: any,
+  children: any, // vnode
   normalizationType: any,
   alwaysNormalize: boolean
 ): VNode | Array<VNode> {
+  // 如果 data 是数组的话，那 data 不是属性集合，而是子节点集合
   if (Array.isArray(data) || isPrimitive(data)) {
     normalizationType = children
     children = data
@@ -41,6 +51,7 @@ export function createElement (
   if (isTrue(alwaysNormalize)) {
     normalizationType = ALWAYS_NORMALIZE
   }
+  // 调用内部的常见元素节点方法
   return _createElement(context, tag, data, children, normalizationType)
 }
 
@@ -64,6 +75,8 @@ export function _createElement (
   if (isDef(data) && isDef(data.is)) {
     tag = data.is
   }
+
+  // 如果没有标签名称，生成一个空节点
   if (!tag) {
     // in case of component :is set to falsy value
     return createEmptyVNode()
@@ -80,6 +93,7 @@ export function _createElement (
       )
     }
   }
+
   // support single function children as default scoped slot
   if (Array.isArray(children) &&
     typeof children[0] === 'function'
@@ -88,15 +102,19 @@ export function _createElement (
     data.scopedSlots = { default: children[0] }
     children.length = 0
   }
+
   if (normalizationType === ALWAYS_NORMALIZE) {
     children = normalizeChildren(children)
   } else if (normalizationType === SIMPLE_NORMALIZE) {
     children = simpleNormalizeChildren(children)
   }
+
   let vnode, ns
+  // 如果 tag 是普通标签（非组件标签）
   if (typeof tag === 'string') {
     let Ctor
     ns = (context.$vnode && context.$vnode.ns) || config.getTagNamespace(tag)
+    // 是否是平台保留标签
     if (config.isReservedTag(tag)) {
       // platform built-in elements
       if (process.env.NODE_ENV !== 'production' && isDef(data) && isDef(data.nativeOn)) {
@@ -105,6 +123,7 @@ export function _createElement (
           context
         )
       }
+      // 生成元素 vnode
       vnode = new VNode(
         config.parsePlatformTagName(tag), data, children,
         undefined, undefined, context
@@ -125,6 +144,7 @@ export function _createElement (
     // direct component options / constructor
     vnode = createComponent(tag, data, context, children)
   }
+
   if (Array.isArray(vnode)) {
     return vnode
   } else if (isDef(vnode)) {

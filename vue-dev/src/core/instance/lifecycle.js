@@ -56,16 +56,21 @@ export function initLifecycle (vm: Component) {
 }
 
 export function lifecycleMixin (Vue: Class<Component>) {
+  // vnode 虚拟节点树
   Vue.prototype._update = function (vnode: VNode, hydrating?: boolean) {
     const vm: Component = this
     const prevEl = vm.$el
     const prevVnode = vm._vnode
     const restoreActiveInstance = setActiveInstance(vm)
     vm._vnode = vnode
+    console.log(vnode);
     // Vue.prototype.__patch__ is injected in entry points
     // based on the rendering backend used.
+    // 第一次渲染，不进行 diff
     if (!prevVnode) {
       // initial render
+      // 获取根据 vnode tree 创建的 dom tree
+      // oldVnode、vnode
       vm.$el = vm.__patch__(vm.$el, vnode, hydrating, false /* removeOnly */)
     } else {
       // updates

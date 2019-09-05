@@ -14,6 +14,7 @@ export function createElement (tagName: string, vnode: VNode): Element {
   return elm
 }
 
+// 创建一个具有指定的命名空间URI和限定名称的元素
 export function createElementNS (namespace: string, tagName: string): Element {
   return document.createElementNS(namespaceMap[namespace], tagName)
 }

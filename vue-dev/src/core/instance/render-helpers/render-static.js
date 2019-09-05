@@ -2,6 +2,7 @@
 
 /**
  * Runtime helper for rendering static trees.
+ * 生成静态节点树
  */
 export function renderStatic (
   index: number,

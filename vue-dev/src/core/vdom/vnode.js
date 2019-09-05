@@ -39,12 +39,12 @@ export default class VNode {
     componentOptions?: VNodeComponentOptions,
     asyncFactory?: Function
   ) {
-    this.tag = tag
-    this.data = data
-    this.children = children
-    this.text = text
+    this.tag = tag // 节点名称
+    this.data = data // VNodeData | void
+    this.children = children // 子节点 array
+    this.text = text // 文本内容
     this.elm = elm
-    this.ns = undefined
+    this.ns = undefined // 命名空间，只有 svg、 math 节点才有
     this.context = context
     this.fnContext = undefined
     this.fnOptions = undefined
@@ -54,11 +54,11 @@ export default class VNode {
     this.componentInstance = undefined
     this.parent = undefined
     this.raw = false
-    this.isStatic = false
+    this.isStatic = false // 是否是静态节点
     this.isRootInsert = true
     this.isComment = false
     this.isCloned = false
-    this.isOnce = false
+    this.isOnce = false // 是否是 v-once 生成的静态节点
     this.asyncFactory = asyncFactory
     this.asyncMeta = undefined
     this.isAsyncPlaceholder = false
@@ -71,6 +71,7 @@ export default class VNode {
   }
 }
 
+// 生成一个空节点，什么都没有
 export const createEmptyVNode = (text: string = '') => {
   const node = new VNode()
   node.text = text
@@ -78,6 +79,7 @@ export const createEmptyVNode = (text: string = '') => {
   return node
 }
 
+// 生成一个文本节点
 export function createTextVNode (val: string | number) {
   return new VNode(undefined, undefined, undefined, String(val))
 }

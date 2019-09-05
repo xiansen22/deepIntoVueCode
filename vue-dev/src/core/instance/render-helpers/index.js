@@ -21,7 +21,7 @@ export function installRenderHelpers (target: any) {
   target._q = looseEqual
   target._i = looseIndexOf
   target._m = renderStatic // 生成静态节点
-  target._f = resolveFilter
+  target._f = resolveFilter // 解析筛选器 filter 根据筛选器的名称，获取 options.filter 上对应的函数，然后将参数传进去执行
   target._k = checkKeyCodes
   target._b = bindObjectProps
   target._v = createTextVNode // 生成文本节点
