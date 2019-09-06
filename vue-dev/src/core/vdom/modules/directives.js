@@ -12,18 +12,22 @@ export default {
   }
 }
 
+/** 
+ * 进行指令的更新
+*/
 function updateDirectives (oldVnode: VNodeWithData, vnode: VNodeWithData) {
+  // 
   if (oldVnode.data.directives || vnode.data.directives) {
     _update(oldVnode, vnode)
   }
 }
 
 function _update (oldVnode, vnode) {
-  const isCreate = oldVnode === emptyNode
-  const isDestroy = vnode === emptyNode
+  const isCreate = oldVnode === emptyNode // 如果 oldVnode === emptyNode 现在执行的是指令的初始化过程
+  const isDestroy = vnode === emptyNode // 如果 vnode === emptyNode 现在执行的是指令的销毁过程
+  // 规范化 vnode 的 directives 形式 （转换成 {}）
   const oldDirs = normalizeDirectives(oldVnode.data.directives, oldVnode.context)
   const newDirs = normalizeDirectives(vnode.data.directives, vnode.context)
-
   const dirsWithInsert = []
   const dirsWithPostpatch = []
 
@@ -31,13 +35,13 @@ function _update (oldVnode, vnode) {
   for (key in newDirs) {
     oldDir = oldDirs[key]
     dir = newDirs[key]
-    if (!oldDir) {
+    if (!oldDir) { // 创建过程
       // new directive, bind
       callHook(dir, 'bind', vnode, oldVnode)
       if (dir.def && dir.def.inserted) {
         dirsWithInsert.push(dir)
       }
-    } else {
+    } else { // 更新过程
       // existing directive, update
       dir.oldValue = oldDir.value
       dir.oldArg = oldDir.arg
@@ -86,28 +90,34 @@ function normalizeDirectives (
   vm: Component
 ): { [key: string]: VNodeDirective } {
   const res = Object.create(null)
-  if (!dirs) {
+  if (!dirs) { // 如果不存在指令的话，返回一个空对象
     // $flow-disable-line
     return res
   }
+
   let i, dir
   for (i = 0; i < dirs.length; i++) {
     dir = dirs[i]
-    if (!dir.modifiers) {
+    if (!dir.modifiers) { // 如果不存在使用修饰符，则返回一个空的修饰符对象
       // $flow-disable-line
       dir.modifiers = emptyModifiers
     }
     res[getRawDirName(dir)] = dir
+    // 根据具体的指令名称从 config 上获取指令的具体定义
     dir.def = resolveAsset(vm.$options, 'directives', dir.name, true)
   }
   // $flow-disable-line
+  // res 是 key/value 形式上，定义这当前 vnode 上所有的指令
   return res
 }
 
+// 获取指令的名称
+// modifiers 修饰符 v-dir:foo.a.b （foo 是传给指令的参数 a,b 是 修饰符）
 function getRawDirName (dir: VNodeDirective): string {
   return dir.rawName || `${dir.name}.${Object.keys(dir.modifiers || {}).join('.')}`
 }
 
+// 执行指令的相应的钩子函数，并且传入值
 function callHook (dir, hook, vnode, oldVnode, isDestroy) {
   const fn = dir.def && dir.def[hook]
   if (fn) {

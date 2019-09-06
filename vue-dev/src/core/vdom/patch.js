@@ -197,7 +197,7 @@ export function createPatchFunction (backend) {
         // 进行子节点的创建处理
         createChildren(vnode, children, insertedVnodeQueue)
 
-        // 进行属性的添加
+        // 进行属性的添加、钩子函数的执行
         if (isDef(data)) {
           invokeCreateHooks(vnode, insertedVnodeQueue)
         }
@@ -319,6 +319,8 @@ export function createPatchFunction (backend) {
 
   function invokeCreateHooks (vnode, insertedVnodeQueue) {
     for (let i = 0; i < cbs.create.length; ++i) {
+      // updateAttrs、updateClass、updateDOMListeners、updateDOMProps、updateStyle、_enter、create、updateDirectives
+      // 空节点是为了区别当前是创建还是销毁
       cbs.create[i](emptyNode, vnode)
     }
     i = vnode.data.hook // Reuse variable
