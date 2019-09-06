@@ -13,6 +13,10 @@
 </head>
 <body>
     <div id="app" v-cloak>
+      <div>
+        {{count}}
+        <button @click='add'>add</button>
+      </div>
       {{name | capitalize}}1111
       <div class="static-parent">
         222 <p class='static-p'> sferg </p>

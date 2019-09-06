@@ -60,6 +60,7 @@ export function lifecycleMixin (Vue: Class<Component>) {
   Vue.prototype._update = function (vnode: VNode, hydrating?: boolean) {
     const vm: Component = this
     const prevEl = vm.$el
+    // 获取 之前存在的 vnode 节点，用于后续的 diff,如果不存在则此次更新为创建过程
     const prevVnode = vm._vnode
     const restoreActiveInstance = setActiveInstance(vm)
     vm._vnode = vnode
@@ -72,7 +73,7 @@ export function lifecycleMixin (Vue: Class<Component>) {
       // 获取根据 vnode tree 创建的 dom tree
       // oldVnode、vnode
       vm.$el = vm.__patch__(vm.$el, vnode, hydrating, false /* removeOnly */)
-    } else {
+    } else { // 更新过程，执行 diff 过程
       // updates
       vm.$el = vm.__patch__(prevVnode, vnode)
     }

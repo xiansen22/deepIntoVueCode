@@ -30,7 +30,8 @@ new Vue({
                 name: 'hys',
                 age: 9
             }
-        ]
+        ],
+        count: 0
     },
     filters: {
       capitalize: function (value) {
@@ -53,5 +54,10 @@ new Vue({
     },
     mounted: function(){
         console.log(this.list);
+    },
+    methods: {
+      add: function() {
+        this.count += 1;
+      }
     }
 })

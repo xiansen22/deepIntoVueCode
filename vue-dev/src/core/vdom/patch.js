@@ -735,12 +735,17 @@ export function createPatchFunction (backend) {
     }
     let isInitialPatch = false
     const insertedVnodeQueue = []
-    if (isUndef(oldVnode)) {
+    if (isUndef(oldVnode)) { // 没有指定装载dom节点（比如组件），创建一个空的根元素节点
       // empty mount (likely as component), create new root element
       isInitialPatch = true
       createElm(vnode, insertedVnodeQueue)
     } else {
-      const isRealElement = isDef(oldVnode.nodeType) // 是否是一个真正元素节点
+      // 是否是一个真正元素节点,
+      // 只有在第一次创建时，oldVnode 是我们的 mount elment
+      const isRealElement = isDef(oldVnode.nodeType) 
+     
+      // 两个 vnode 并且是同一个 vnode 节点才有 diff 的过程，
+      // 否则按照新的 vnode 直接创建新的 dom element 进行覆盖
       if (!isRealElement && sameVnode(oldVnode, vnode)) {
         // patch existing root node  
         // diff 过程
