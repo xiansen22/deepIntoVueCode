@@ -31,6 +31,7 @@ export function insertBefore (parentNode: Node, newNode: Node, referenceNode: No
   parentNode.insertBefore(newNode, referenceNode)
 }
 
+// 父节点删除子节点
 export function removeChild (node: Node, child: Node) {
   node.removeChild(child)
 }

@@ -11,6 +11,7 @@ import {
   genClassForVnode
 } from 'web/util/index'
 
+// 更新创建 className 
 function updateClass (oldVnode: any, vnode: any) {
   const el = vnode.elm
   const data: VNodeData = vnode.data

@@ -96,7 +96,9 @@ export function createPatchFunction (backend) {
     return remove
   }
 
+  // 移除节点
   function removeNode (el) {
+    // 拿到节点的父节点，通过父节点来移除子节点
     const parent = nodeOps.parentNode(el)
     // element may have already been removed due to v-html / v-text
     if (isDef(parent)) {
@@ -323,9 +325,13 @@ export function createPatchFunction (backend) {
       // 空节点是为了区别当前是创建还是销毁
       cbs.create[i](emptyNode, vnode)
     }
+
+    // 检查节点上是否定义相关的 hook 钩子函数，比如指令什么的
     i = vnode.data.hook // Reuse variable
     if (isDef(i)) {
+      // 如果定义了 create 的钩子函数，则立即执行 create 钩子函数
       if (isDef(i.create)) i.create(emptyNode, vnode)
+      // 如果定义了 insert 钩子函数，则存放到 insertedVnodeQueue 中，待所有节点创建插入完毕后，一起执行
       if (isDef(i.insert)) insertedVnodeQueue.push(vnode)
     }
   }
@@ -375,12 +381,15 @@ export function createPatchFunction (backend) {
       }
     }
   }
-
+  
+  // 移除节点
   function removeVnodes (vnodes, startIdx, endIdx) {
     for (; startIdx <= endIdx; ++startIdx) {
       const ch = vnodes[startIdx]
+      // 检测该节点的类型，根据不同的节点类型调用不同的移除函数
       if (isDef(ch)) {
         if (isDef(ch.tag)) {
+          // 移除节点并触发节点 remove 的钩子函数
           removeAndInvokeRemoveHook(ch)
           // 触发组件销毁事件
           invokeDestroyHook(ch)
@@ -391,6 +400,7 @@ export function createPatchFunction (backend) {
     }
   }
 
+  // 移除节点并触发节点 remove 的钩子函数
   function removeAndInvokeRemoveHook (vnode, rm) {
     if (isDef(rm) || isDef(vnode.data)) {
       let i
@@ -416,6 +426,7 @@ export function createPatchFunction (backend) {
         rm()
       }
     } else {
+      // 直接移除节点
       removeNode(vnode.elm)
     }
   }
@@ -592,6 +603,7 @@ export function createPatchFunction (backend) {
     }
   }
 
+  // 执行 vnode 的插入事件
   function invokeInsertHook (vnode, queue, initial) {
     // delay insert hooks for component root nodes, invoke them after the
     // element is really inserted
@@ -733,7 +745,7 @@ export function createPatchFunction (backend) {
         // patch existing root node  
         // diff 过程
         patchVnode(oldVnode, vnode, insertedVnodeQueue, null, null, removeOnly)
-      } else {
+      } else { // 初始创建
         if (isRealElement) {
           // mounting to a real element
           // check if this is server-rendered content and if we can perform
@@ -812,13 +824,16 @@ export function createPatchFunction (backend) {
         }
 
         // destroy old node
+        // 摧毁旧的 dom 节点
         if (isDef(parentElm)) {
+          // 将我们之前定义的状态容器 dom 节点从 页面中移除，用根据 vnode 生成的 dom tree 进行替代
           removeVnodes([oldVnode], 0, 0)
         } else if (isDef(oldVnode.tag)) {
           invokeDestroyHook(oldVnode)
         }
       }
     }
+    // 执行节点的插入钩子函数
     invokeInsertHook(vnode, insertedVnodeQueue, isInitialPatch)
     // 将根据 vnode tree 创建完毕的元素 tree 返回回去
     return vnode.elm
