@@ -16,7 +16,7 @@ export default {
  * 进行指令的更新
 */
 function updateDirectives (oldVnode: VNodeWithData, vnode: VNodeWithData) {
-  // 
+  // 只要一个节点上存在指令属性，就会进行指令的创建或更新或销毁
   if (oldVnode.data.directives || vnode.data.directives) {
     _update(oldVnode, vnode)
   }
@@ -37,8 +37,9 @@ function _update (oldVnode, vnode) {
     dir = newDirs[key]
     if (!oldDir) { // 创建过程
       // new directive, bind
+      // 创建一个新的指令插入，执行 bind 函数
       callHook(dir, 'bind', vnode, oldVnode)
-      if (dir.def && dir.def.inserted) {
+      if (dir.def && dir.def.inserted) { // 指令的配置中定义了 inserted, inserted 是在被绑定的元素插入到 DOM 中时 执行
         dirsWithInsert.push(dir)
       }
     } else { // 更新过程
@@ -52,19 +53,21 @@ function _update (oldVnode, vnode) {
     }
   }
 
+  // 将配置了 inserted 的指令挂载到节点的inserted 的钩子函数上，在节点插入 dom 时执行
   if (dirsWithInsert.length) {
     const callInsert = () => {
       for (let i = 0; i < dirsWithInsert.length; i++) {
         callHook(dirsWithInsert[i], 'inserted', vnode, oldVnode)
       }
     }
-    if (isCreate) {
+    if (isCreate) { // 第一次创建过程，将 inserted 函数配置到 vnode 的钩子上
       mergeVNodeHook(vnode, 'insert', callInsert)
-    } else {
+    } else { // 如果不是则直接执行
       callInsert()
     }
   }
 
+  // 指令所在组件的 VNode 及其子 VNode 全部更新后调用
   if (dirsWithPostpatch.length) {
     mergeVNodeHook(vnode, 'postpatch', () => {
       for (let i = 0; i < dirsWithPostpatch.length; i++) {
@@ -73,6 +76,7 @@ function _update (oldVnode, vnode) {
     })
   }
 
+  // 指令与元素解绑时调用
   if (!isCreate) {
     for (key in oldDirs) {
       if (!newDirs[key]) {

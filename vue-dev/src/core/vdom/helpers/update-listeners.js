@@ -33,6 +33,7 @@ const normalizeEvent = cached((name: string): {
   }
 })
 
+// 创建一个 invoker 函数
 export function createFnInvoker (fns: Function | Array<Function>, vm: ?Component): Function {
   function invoker () {
     const fns = invoker.fns
