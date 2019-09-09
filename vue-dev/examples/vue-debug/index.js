@@ -57,7 +57,8 @@ new Vue({
     },
     methods: {
       add: function() {
-        this.count += 1;
+        this.$forceUpdate();
+        this.count = 1;
       }
     }
 })
