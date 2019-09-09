@@ -369,7 +369,8 @@ export function createPatchFunction (backend) {
       nodeOps.setStyleScope(vnode.elm, i)
     }
   }
-
+  
+  // 为新增的 vnode 创建元素节点，并插入指定位置
   function addVnodes (parentElm, refElm, vnodes, startIdx, endIdx, insertedVnodeQueue) {
     for (; startIdx <= endIdx; ++startIdx) {
       createElm(vnodes[startIdx], insertedVnodeQueue, parentElm, refElm, false, vnodes, startIdx)
@@ -468,25 +469,33 @@ export function createPatchFunction (backend) {
     
     // 开始遍历 vnode 和 oldvnode 的子节点
     while (oldStartIdx <= oldEndIdx && newStartIdx <= newEndIdx) {
-      if (isUndef(oldStartVnode)) { // 如果当前遍历的 oldCh  节点不存在，则进行下一个
+      if (isUndef(oldStartVnode)) { // 如果当前遍历的 oldCh  节点不存在，则跳过比较下一个
         oldStartVnode = oldCh[++oldStartIdx] // Vnode has been moved left
       } else if (isUndef(oldEndVnode)) { // 如果 oldCh 最后一个 vnode 不存在，则获取倒数第二个 vnode
         oldEndVnode = oldCh[--oldEndIdx]
-      } else if (sameVnode(oldStartVnode, newStartVnode)) { // 如果两个节点相同，则进行节点比较
+      } else if (sameVnode(oldStartVnode, newStartVnode)) { 
+        // 当前遍历节点相同，如果两个节点相同，则进行节点比较，进行一个正序对比
         patchVnode(oldStartVnode, newStartVnode, insertedVnodeQueue, newCh, newStartIdx)
         oldStartVnode = oldCh[++oldStartIdx] // 进行下一个 vnode 的比较
         newStartVnode = newCh[++newStartIdx] // 进行下一个 vnode 的比较
-      } else if (sameVnode(oldEndVnode, newEndVnode)) {
+      } else if (sameVnode(oldEndVnode, newEndVnode)) { 
+        // 如果当前遍历节点不同，而 oldvnode 和 newvnode 的最后一个节点相同，则对最后节点进行 pacth, 进行一个倒序对比
         patchVnode(oldEndVnode, newEndVnode, insertedVnodeQueue, newCh, newEndIdx)
         oldEndVnode = oldCh[--oldEndIdx]
         newEndVnode = newCh[--newEndIdx]
       } else if (sameVnode(oldStartVnode, newEndVnode)) { // Vnode moved right
+        // oldvnode 的当前节点是 newvnode 的末尾节点 
+        //（即oldvnode 在新的vnode 中的位置向后移动了，需要对其对应的元素节点进行向后移动）
         patchVnode(oldStartVnode, newEndVnode, insertedVnodeQueue, newCh, newEndIdx)
+        // 将当前 oldvnode 对应的元素节点移动到最后的位置
         canMove && nodeOps.insertBefore(parentElm, oldStartVnode.elm, nodeOps.nextSibling(oldEndVnode.elm))
         oldStartVnode = oldCh[++oldStartIdx]
-        newEndVnode = newCh[--newEndIdx]
+        newEndVnode = newCh[--newEndIdx] // 将 newEndVnode 的位置想左移动一位
       } else if (sameVnode(oldEndVnode, newStartVnode)) { // Vnode moved left
+        // newvnode 的当前节点是 oldvnode 的某尾节点 
+        //（即oldvnode 在新的vnode 中的位置提前了， 需要对其对应的元素节点进行向前移动）
         patchVnode(oldEndVnode, newStartVnode, insertedVnodeQueue, newCh, newStartIdx)
+        // 将
         canMove && nodeOps.insertBefore(parentElm, oldEndVnode.elm, oldStartVnode.elm)
         oldEndVnode = oldCh[--oldEndIdx]
         newStartVnode = newCh[++newStartIdx]
@@ -500,14 +509,22 @@ export function createPatchFunction (backend) {
         
         // 如果当前遍历的节点，不存在 oldvnode tree 上那么这个节点是一个新的节点
         if (isUndef(idxInOld)) { // New element
+          // 为 vnode 创建真正元素节点，并且根据相应位置插入 dom tree 中
           createElm(newStartVnode, insertedVnodeQueue, parentElm, oldStartVnode.elm, false, newCh, newStartIdx)
-        } else {
+        } else { // 如果当前遍历的节点存在 olvnode 上，那么这个节点不是一个新节点，而是一个位置移动了的节点
+          // 根据查找到的位置关系，从 oldvnode 上获取对应的旧节点
           vnodeToMove = oldCh[idxInOld]
+          // 进行这两个节点对比，对比是否发生改变
           if (sameVnode(vnodeToMove, newStartVnode)) {
+            // 进行相同节点的 patch
             patchVnode(vnodeToMove, newStartVnode, insertedVnodeQueue, newCh, newStartIdx)
+            // 在 oldCh 上对应的节点置为 undefined，表示这个节点已经被移动了
             oldCh[idxInOld] = undefined
+            // 如果当前可以移动元素的话，进行元素节点的移动（即元素的插入）
             canMove && nodeOps.insertBefore(parentElm, vnodeToMove.elm, oldStartVnode.elm)
           } else {
+            // 因为 vnodeToMove 是根据 key 查找出来出来，所以此处是具有相同 key 的 vnode，但不是 sameVnode ，将当前遍历的元素按照新元素对待
+            // 为 vnode 创建真正元素节点，并且根据相应位置插入 dom tree 中
             // same key but different element. treat as new element
             createElm(newStartVnode, insertedVnodeQueue, parentElm, oldStartVnode.elm, false, newCh, newStartIdx)
           }
