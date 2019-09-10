@@ -69,7 +69,9 @@ if (inBrowser && !isIE) {
  * Flush both queues and run the watchers.
  */
 function flushSchedulerQueue () {
+  // 获取当前 flush 的时间戳
   currentFlushTimestamp = getNow()
+  // 标志当前 flushing 开始
   flushing = true
   let watcher, id
 
@@ -81,17 +83,26 @@ function flushSchedulerQueue () {
   //    user watchers are created before the render watcher)
   // 3. If a component is destroyed during a parent component's watcher run,
   //    its watchers can be skipped.
+  // 在正式开始 flush 之前进行一个  queue 排序
+  // 这么做的目的是确保：
+  // 1、更新在组件更新时是更新是由父组件至子组件（因为父组件往往先于子组件）
+  // 2、
+  // 3、
   queue.sort((a, b) => a.id - b.id)
 
   // do not cache length because more watchers might be pushed
   // as we run existing watchers
+  // 不缓存 queue 的长度，因为 queue 中的 watcher 是有可能随时改变的
   for (index = 0; index < queue.length; index++) {
     watcher = queue[index]
+    // 先执行 before
     if (watcher.before) {
       watcher.before()
     }
+    // 取出一个 watcher，就要在相应的 id map 上将其对应的 id 置空
     id = watcher.id
     has[id] = null
+    // 执行 watcher 的更新
     watcher.run()
     // in dev build, check and stop circular updates.
     if (process.env.NODE_ENV !== 'production' && has[id] != null) {
@@ -109,15 +120,20 @@ function flushSchedulerQueue () {
       }
     }
   }
+  
+  // queue 遍历结束
 
   // keep copies of post queues before resetting state
   const activatedQueue = activatedChildren.slice()
   const updatedQueue = queue.slice()
 
+  // 重制 flush 相关状态数据
   resetSchedulerState()
 
   // call component updated and activated hooks
+  // 执行组件的 activated 钩子函数
   callActivatedHooks(activatedQueue)
+  // 执行组件 updated 钩子函数
   callUpdatedHooks(updatedQueue)
 
   // devtool hook
@@ -127,6 +143,7 @@ function flushSchedulerQueue () {
   }
 }
 
+// 执行组件的 updated 的钩子函数
 function callUpdatedHooks (queue) {
   let i = queue.length
   while (i--) {
@@ -160,23 +177,36 @@ function callActivatedHooks (queue) {
  * Push a watcher into the watcher queue.
  * Jobs with duplicate IDs will be skipped unless it's
  * pushed when the queue is being flushed.
+ * 将一个 watcher 放入 watcher 队列, 会跳过拥有完全一样 id 的  watcher ，除非当前的 watcher 队列已经执行完毕
  */
 export function queueWatcher (watcher: Watcher) {
+  // 获取 watcher 的 id
   const id = watcher.id
+  // 建立一个关于 watcher.id 的 map, 跳过拥有相同 id 的 watcher
   if (has[id] == null) {
+    // 标记当前 watcher 进入更新队列
     has[id] = true
+    // 如果当前还未开始本轮的 update，将 watcher 推入队列
     if (!flushing) {
       queue.push(watcher)
-    } else {
+    } else { 
+      // 本轮 flush 已经开始但尚未结束，而又插入一个 watcher
+      // 插入的这个 watcher 有两种情况：
+      // 1、之前在 queue 中, 已经在 flush 中执行了 
       // if already flushing, splice the watcher based on its id
       // if already past its id, it will be run next immediately.
       let i = queue.length - 1
+      // index ,当前 flush 执行的 watcher 位置
+      // 如果当前 flush 并未遍历完毕 queue，根据插入的 watcher id 在 queue 中找到一个合适的位置
       while (i > index && queue[i].id > watcher.id) {
         i--
       }
+      // 根据 i 将 新增的 watcher 插入到 queue 中
       queue.splice(i + 1, 0, watcher)
     }
+
     // queue the flush
+    // 开始 queue 的 flush
     if (!waiting) {
       waiting = true
 
@@ -184,6 +214,7 @@ export function queueWatcher (watcher: Watcher) {
         flushSchedulerQueue()
         return
       }
+      // 把 flushSchedulerQueue 推入到微任务中
       nextTick(flushSchedulerQueue)
     }
   }

@@ -170,7 +170,9 @@ export function defineReactive (
       }
       return value
     },
+    // 触发侦测数据的 set 
     set: function reactiveSetter (newVal) {
+      // 根据是否设置 getter 获取旧值
       const value = getter ? getter.call(obj) : val
       /* eslint-disable no-self-compare */
       // 如果新值与旧值相同则中断侦测过程
@@ -182,7 +184,9 @@ export function defineReactive (
         customSetter()
       }
       // #7981: for accessor properties without setter
+      // 对于只设置 getter 没有设置 setter 的属性存储器，不进行依赖更新
       if (getter && !setter) return
+      // 如果设置了相应的 stter 函数，则调用 setter
       if (setter) {
         setter.call(obj, newVal)
       } else {

@@ -72,9 +72,9 @@ export default class Watcher {
     this.active = true
     this.dirty = this.lazy // for lazy watchers
     this.deps = []
-    this.newDeps = []
+    this.newDeps = [] // 存储 dep 实例
     this.depIds = new Set()
-    this.newDepIds = new Set()
+    this.newDepIds = new Set() // 存储 dep id
     this.expression = process.env.NODE_ENV !== 'production'
       ? expOrFn.toString()
       : ''
@@ -125,6 +125,7 @@ export default class Watcher {
         traverse(value)
       }
       popTarget()
+      // 每一次依赖收集完毕后，需要将 newDepIds、newDeps 清空，用于下一次依赖收集
       this.cleanupDeps()
     }
     return value
@@ -135,11 +136,12 @@ export default class Watcher {
    * 将 dep 保存起来，以便查看依赖来多少数据
    */
   addDep (dep: Dep) {
+    // 拿到当前依赖的数据对应的 dep，将其保存起来
     const id = dep.id
     if (!this.newDepIds.has(id)) {
-      this.newDepIds.add(id) 
-      this.newDeps.push(dep)
-      if (!this.depIds.has(id)) {
+      this.newDepIds.add(id) // 新添加的 dep id
+      this.newDeps.push(dep) // 新添加的 dep
+      if (!this.depIds.has(id)) { // 保证 dep 不重复收集 watcher 
         dep.addSub(this)
       }
     }
@@ -156,10 +158,13 @@ export default class Watcher {
         dep.removeSub(this)
       }
     }
+    // 将 newDepIds 上的值保存到 depIds， 然后对 newDepIds 进行清空
     let tmp = this.depIds
     this.depIds = this.newDepIds
     this.newDepIds = tmp
     this.newDepIds.clear()
+    
+    // 将 newDeps 上的值保存在 deps，然后对 newDeps 进行清空
     tmp = this.deps
     this.deps = this.newDeps
     this.newDeps = tmp
@@ -169,6 +174,7 @@ export default class Watcher {
   /**
    * Subscriber interface.
    * Will be called when a dependency changes.
+   * 当依赖的数据发生变化执行更新
    */
   update () {
     /* istanbul ignore else */
@@ -186,6 +192,7 @@ export default class Watcher {
    * Will be called by the scheduler.
    */
   run () {
+    // watcher 尚未销毁
     if (this.active) {
       const value = this.get()
       if (

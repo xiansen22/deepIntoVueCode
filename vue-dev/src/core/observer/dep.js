@@ -18,7 +18,7 @@ export default class Dep {
   constructor () {
     // 每一个 dep 都有自己唯一的 uid 
     this.id = uid++
-    this.subs = []
+    this.subs = [] // 存放 watcher 实例
   }
 
   /**
@@ -42,6 +42,7 @@ export default class Dep {
 
   notify () {
     // stabilize the subscriber list first
+    // 针对 subs 进行浅拷贝。
     const subs = this.subs.slice()
     if (process.env.NODE_ENV !== 'production' && !config.async) {
       // subs aren't sorted in scheduler if not running async
@@ -49,6 +50,7 @@ export default class Dep {
       // order
       subs.sort((a, b) => a.id - b.id)
     }
+    // 执行 dep 中存储的依赖更新
     for (let i = 0, l = subs.length; i < l; i++) {
       subs[i].update()
     }
