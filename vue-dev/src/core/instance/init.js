@@ -106,20 +106,25 @@ export function initInternalComponent (vm: Component, options: InternalComponent
 export function resolveConstructorOptions (Ctor: Class<Component>) {
   let options = Ctor.options
   if (Ctor.super) {
-    const superOptions = resolveConstructorOptions(Ctor.super)
-    const cachedSuperOptions = Ctor.superOptions
+    const superOptions = resolveConstructorOptions(Ctor.super) // 拿到父构造函数的 options
+    const cachedSuperOptions = Ctor.superOptions // 拿到子构造函数缓存的父构造函数的 options
+    // 将子构造函数创建时缓存的父构造函数的 options 与现在的父构造函数的 options 进行比较，不同的话，则证明发生了改变，需要进行合并处理
     if (superOptions !== cachedSuperOptions) {
       // super option changed,
       // need to resolve new options.
+      // 父构造函数的 options 发生改变，子构造函数需要进行相应的更新
       Ctor.superOptions = superOptions
       // check if there are any late-modified/attached options (#4976)
+      // 对比那些属性发生了变化，将变化了的属性返回
       const modifiedOptions = resolveModifiedOptions(Ctor)
       // update base extend options
+      // Ctor.extendOptions 更新修改的属性
       if (modifiedOptions) {
         extend(Ctor.extendOptions, modifiedOptions)
       }
       options = Ctor.options = mergeOptions(superOptions, Ctor.extendOptions)
       if (options.name) {
+        // 重新指定 options 上对应组件的构造函数
         options.components[options.name] = Ctor
       }
     }
@@ -129,8 +134,8 @@ export function resolveConstructorOptions (Ctor: Class<Component>) {
 
 function resolveModifiedOptions (Ctor: Class<Component>): ?Object {
   let modified
-  const latest = Ctor.options
-  const sealed = Ctor.sealedOptions
+  const latest = Ctor.options // 子构造函数创建时，自身的 extendOptions 与 Super.options 的合并
+  const sealed = Ctor.sealedOptions // Sub.options 的一个拷贝
   for (const key in latest) {
     if (latest[key] !== sealed[key]) {
       if (!modified) modified = {}

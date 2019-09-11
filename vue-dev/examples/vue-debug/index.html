@@ -23,14 +23,16 @@
       </div>
       <a href = 'www.baidu.com' >baidu</a>
         <!--我是注释-->
-        {{name}}
-        <div v-pin>diretives</div>
-        <div class = "old-people">{{oldPeople.name}}</div>
-        <ul>
-          <li v-if = 'numbers.length > 0' v-for = '(item, index, i) in numbers' :key='index'>姓名：{{item.name}}, {{index}}</li>
-          <li v-else-if = 'numbers.length > 2'>333</li>
-          <li v-else>111</li>
-        </ul>
+      {{name}}
+      <div v-pin>diretives</div>
+      <div class = "old-people">{{oldPeople.name}}</div>
+      <ul>
+        <li v-if = 'numbers.length > 0' v-for = '(item, index, i) in numbers' :key='index'>姓名：{{item.name}}, {{index}}</li>
+        <li v-else-if = 'numbers.length > 2'>333</li>
+        <li v-else>111</li>
+      </ul>
+    <child></child>    
+      
     </div>
     <script src="../../dist/vue.js"></script>
     <script src="./index.js"></script>

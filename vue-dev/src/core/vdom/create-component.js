@@ -99,25 +99,28 @@ const componentVNodeHooks = {
 const hooksToMerge = Object.keys(componentVNodeHooks)
 
 export function createComponent (
-  Ctor: Class<Component> | Function | Object | void,
-  data: ?VNodeData,
-  context: Component,
+  Ctor: Class<Component> | Function | Object | void,  // 组件的构造函数
+  data: ?VNodeData, // 组件的属性相关
+  context: Component, // 上下文
   children: ?Array<VNode>,
   tag?: string
 ): VNode | Array<VNode> | void {
+  // 如果未定义构造函数直接返回停止下面的操作
   if (isUndef(Ctor)) {
     return
   }
 
-  const baseCtor = context.$options._base
+  const baseCtor = context.$options._base // Vue 构造函数
 
   // plain options object: turn it into a constructor
+  // 如果 Ctor 是对象，那么将其转换为构造函数
   if (isObject(Ctor)) {
     Ctor = baseCtor.extend(Ctor)
   }
 
   // if at this stage it's not a constructor or an async component factory,
   // reject.
+  // Ctor 的检验
   if (typeof Ctor !== 'function') {
     if (process.env.NODE_ENV !== 'production') {
       warn(`Invalid Component definition: ${String(Ctor)}`, context)
@@ -126,6 +129,7 @@ export function createComponent (
   }
 
   // async component
+  // 异步组件
   let asyncFactory
   if (isUndef(Ctor.cid)) {
     asyncFactory = Ctor
@@ -148,6 +152,7 @@ export function createComponent (
 
   // resolve constructor options in case global mixins are applied after
   // component constructor creation
+  // 重新计算 Ctor 的 options,因为在子组件的构造函数创建完成时，可能会有一个全局的 minxin 的混入
   resolveConstructorOptions(Ctor)
 
   // transform component v-model data into props & events

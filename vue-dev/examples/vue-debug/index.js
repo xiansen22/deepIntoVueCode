@@ -4,6 +4,22 @@
 //       el.style.top = binding.value + 'px'
 //     }
 //   })
+
+const Child = Vue.component('child', {
+  data: function() {
+    return {
+      count: 0
+    }
+  },
+  template: `
+    <div>我是子组件 {{count}}</div>
+  `,
+  created: function() {
+    console.log('我是子组件的 created');
+  }
+})
+
+
 new Vue({
     el: '#app',
     props: {
@@ -13,6 +29,9 @@ new Vue({
                 return {}
             }
         }
+    },
+    components: {
+      child: Child
     },
     directives: {
         pin: function(el){

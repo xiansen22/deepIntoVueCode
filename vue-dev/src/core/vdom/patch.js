@@ -154,6 +154,8 @@ export function createPatchFunction (backend) {
     }
 
     vnode.isRootInsert = !nested // for transition enter check
+    
+    // 子组件的创建
     if (createComponent(vnode, insertedVnodeQueue, parentElm, refElm)) {
       return
     }
