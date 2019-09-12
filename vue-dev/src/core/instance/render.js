@@ -80,6 +80,7 @@ export function renderMixin (Vue: Class<Component>) {
 
     // set parent vnode. this allows render functions to have access
     // to the data on the placeholder node.
+    // 设置父节点，用于访问设置在组件标签上的属性
     vm.$vnode = _parentVnode
     // render self
     let vnode
@@ -124,6 +125,7 @@ export function renderMixin (Vue: Class<Component>) {
       vnode = createEmptyVNode()
     }
     // set parent
+    // 设置节点 vnode 的父节点
     vnode.parent = _parentVnode
     return vnode
   }

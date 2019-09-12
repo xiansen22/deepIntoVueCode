@@ -31,7 +31,6 @@ Vue.prototype.$mount = function (
     )
     return this
   }
-
   const options = this.$options
   // resolve template/el and convert to render function
   // 解析 template 和 el 并且对 render 函数进行重写

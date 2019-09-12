@@ -90,7 +90,6 @@ function initProps (vm: Component, propsOptions: Object) {
     keys.push(key)
     // 获取 prop 的值，其中对 Boolean 类型的 prop 进行特殊处理
     const value = validateProp(key, propsOptions, propsData, vm)
-    console.log(value, key);
     /* istanbul ignore else */
     if (process.env.NODE_ENV !== 'production') {
       const hyphenatedKey = hyphenate(key)

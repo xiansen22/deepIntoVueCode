@@ -56,10 +56,11 @@ const componentVNodeHooks = {
       child.$mount(hydrating ? vnode.elm : undefined, hydrating)
     }
   },
-
+  
+  // 子组件的更新，，主要是用来更新组件标签上的属性
   prepatch (oldVnode: MountedComponentVNode, vnode: MountedComponentVNode) {
     const options = vnode.componentOptions
-    const child = vnode.componentInstance = oldVnode.componentInstance
+    const child = vnode.componentInstance = oldVnode.componentInstance // 拿到子组件的实例
     updateChildComponent(
       child,
       options.propsData, // updated props
@@ -109,7 +110,7 @@ export function createComponent (
   context: Component, // 上下文
   children: ?Array<VNode>,
   tag?: string
-): VNode | Array<VNode> | void {
+): VNode | Array<VNode> | void {  
   // 如果未定义构造函数直接返回停止下面的操作
   if (isUndef(Ctor)) {
     return
@@ -167,7 +168,7 @@ export function createComponent (
   }
 
   // extract props
-  // 提取 props
+  // 将组件标签上符合子组件要求的 props 提取为 propsData
   const propsData = extractPropsFromVNodeData(data, Ctor, tag)
 
   // functional component 创建函数组件
@@ -208,7 +209,6 @@ export function createComponent (
     { Ctor, propsData, listeners, tag, children },
     asyncFactory
   )
-
   // Weex specific: invoke recycle-list optimized @render function for
   // extracting cell-slot template.
   // https://github.com/Hanks10100/weex-native-directive/tree/master/component

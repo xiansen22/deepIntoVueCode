@@ -220,7 +220,8 @@ export function mountComponent (
   }
   return vm
 }
-
+// 子组件的更新
+// 主要是对组件标签上使用的属性进行更新
 export function updateChildComponent (
   vm: Component,
   propsData: ?Object,

@@ -626,6 +626,7 @@ export function createPatchFunction (backend) {
     let i
     const data = vnode.data
     if (isDef(data) && isDef(i = data.hook) && isDef(i = i.prepatch)) {
+      // 组件标签的 patch 过程，主要是用来更新组件标签上的属性
       i(oldVnode, vnode)
     }
     // 开始子节点的对比

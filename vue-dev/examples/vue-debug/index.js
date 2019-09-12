@@ -6,6 +6,7 @@
 //   })
 
 const Child = Vue.component('child', {
+  props: ['role', 'number'],
   data: function() {
     return {
       count: 0
@@ -16,6 +17,9 @@ const Child = Vue.component('child', {
   `,
   created: function() {
     console.log('我是子组件的 created');
+  },
+  mounted: function() {
+
   }
 })
 

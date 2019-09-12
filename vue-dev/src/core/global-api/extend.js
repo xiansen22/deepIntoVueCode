@@ -43,11 +43,10 @@ export function initExtend (Vue: GlobalAPI) {
     Sub.prototype.constructor = Sub // 修改 Sub 原型的 constructor
     
     Sub.cid = cid++  // 为子构造函数创建 cid
-    Sub.options = mergeOptions( // 合并父构造函数的 options
+    Sub.options = mergeOptions( // 合并父构造函数的 options, 会对子构造函数的 options.props,options.directive 等进行初始化
       Super.options,
       extendOptions
     )
-    console.log(Super.options,444);
     Sub['super'] = Super // 保存父构造函数
 
     // For props and computed properties, we define the proxy getters on
@@ -56,6 +55,7 @@ export function initExtend (Vue: GlobalAPI) {
     if (Sub.options.props) {
       initProps(Sub)
     }
+
     if (Sub.options.computed) {
       initComputed(Sub)
     }
