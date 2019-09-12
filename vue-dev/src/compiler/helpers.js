@@ -93,21 +93,20 @@ export function addHandler (
   // normalize click.right and click.middle since they don't actually fire
   // this is technically browser-specific, but at least for now browsers are
   // the only target envs that have right/middle clicks.
-  if (modifiers.right) {
-    if (dynamic) {
+  if (modifiers.right) { // 鼠标右键
+    if (dynamic) { // 使用了动态参数
       name = `(${name})==='click'?'contextmenu':(${name})`
     } else if (name === 'click') {
       name = 'contextmenu'
       delete modifiers.right
     }
-  } else if (modifiers.middle) {
+  } else if (modifiers.middle) { // 鼠标中间键
     if (dynamic) {
       name = `(${name})==='click'?'mouseup':(${name})`
     } else if (name === 'click') {
       name = 'mouseup'
     }
   }
-
   // check capture modifier
   if (modifiers.capture) {
     delete modifiers.capture
@@ -145,7 +144,7 @@ export function addHandler (
   } else {
     events[name] = newHandler
   }
-
+  console.log(el.events);
   el.plain = false
 }
 

@@ -50,7 +50,7 @@ export default class VNode {
     this.fnOptions = undefined
     this.fnScopeId = undefined
     this.key = data && data.key
-    this.componentOptions = componentOptions
+    this.componentOptions = componentOptions // 组件标签的相关属性集合，比如  { Ctor, propsData, listeners, tag, children }
     this.componentInstance = undefined
     this.parent = undefined
     this.raw = false

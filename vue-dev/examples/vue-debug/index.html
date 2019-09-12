@@ -15,7 +15,7 @@
     <div id="app" v-cloak>
       <div>
         {{count}}
-        <button @click='add'>add</button>
+        <button @click.stop='add'>add</button>
       </div>
       {{name | capitalize}}1111
       <div class="static-parent">

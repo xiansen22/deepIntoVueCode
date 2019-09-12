@@ -33,21 +33,26 @@ import {
 } from 'weex/runtime/recycle-list/render-component-template'
 
 // inline hooks to be invoked on component VNodes during patch
+// 在 vdom patch 阶段内置的 hooks
 const componentVNodeHooks = {
+
+  // 组件的初始化，会创建一个组件实例，并且进行组件的挂载
   init (vnode: VNodeWithData, hydrating: boolean): ?boolean {
     if (
       vnode.componentInstance &&
       !vnode.componentInstance._isDestroyed &&
       vnode.data.keepAlive
-    ) {
+    ) { //  kept-alive components 的处理
       // kept-alive components, treat as a patch
       const mountedNode: any = vnode // work around flow
       componentVNodeHooks.prepatch(mountedNode, mountedNode)
-    } else {
+    } else { // 正常组件的实例创建，完成组件的初始化
       const child = vnode.componentInstance = createComponentInstanceForVnode(
         vnode,
         activeInstance
       )
+      // 组件是没有挂载容器 el，只有根组件才有 
+      // 所以组件的需要我们手动挂载
       child.$mount(hydrating ? vnode.elm : undefined, hydrating)
     }
   },
@@ -60,7 +65,7 @@ const componentVNodeHooks = {
       options.propsData, // updated props
       options.listeners, // updated listeners
       vnode, // new parent vnode
-      options.children // new children
+      options.children // new children 
     )
   },
 
@@ -156,20 +161,23 @@ export function createComponent (
   resolveConstructorOptions(Ctor)
 
   // transform component v-model data into props & events
+  // 将 v-model 转换为 props 和 events 的组合模式
   if (isDef(data.model)) {
     transformModel(Ctor.options, data)
   }
 
   // extract props
+  // 提取 props
   const propsData = extractPropsFromVNodeData(data, Ctor, tag)
 
-  // functional component
+  // functional component 创建函数组件
   if (isTrue(Ctor.options.functional)) {
     return createFunctionalComponent(Ctor, propsData, data, context, children)
   }
 
   // extract listeners, since these needs to be treated as
   // child component listeners instead of DOM listeners
+  // 是否绑定了 dom 事件
   const listeners = data.on
   // replace with listeners with .native modifier
   // so it gets processed during parent component patch.
@@ -188,12 +196,14 @@ export function createComponent (
   }
 
   // install component management hooks onto the placeholder node
+  // 初始化组件的钩子函数
   installComponentHooks(data)
 
   // return a placeholder vnode
+  // 先创建一个用来占位的 vnode,并没有真正的去创建这个组件的整个 vnode tree
   const name = Ctor.options.name || tag
   const vnode = new VNode(
-    `vue-component-${Ctor.cid}${name ? `-${name}` : ''}`,
+    `vue-component-${Ctor.cid}${name ? `-${name}` : ''}`, // 对名称进行组件标明
     data, undefined, undefined, undefined, context,
     { Ctor, propsData, listeners, tag, children },
     asyncFactory
@@ -210,6 +220,7 @@ export function createComponent (
   return vnode
 }
 
+// 为组件 vnode 创建一个组件实例
 export function createComponentInstanceForVnode (
   vnode: any, // we know it's MountedComponentVNode but flow doesn't
   parent: any, // activeInstance in lifecycle state
@@ -228,18 +239,20 @@ export function createComponentInstanceForVnode (
   return new vnode.componentOptions.Ctor(options)
 }
 
+// 为组件插入所需要的钩子函数，在 patch 中使用，进行相应的初始化
 function installComponentHooks (data: VNodeData) {
-  const hooks = data.hook || (data.hook = {})
-  for (let i = 0; i < hooksToMerge.length; i++) {
+  const hooks = data.hook || (data.hook = {}) // 先声明 data.hook
+  for (let i = 0; i < hooksToMerge.length; i++) { // hooksToMerge 是 componentVNodeHooks 的 key 集合
     const key = hooksToMerge[i]
-    const existing = hooks[key]
-    const toMerge = componentVNodeHooks[key]
-    if (existing !== toMerge && !(existing && existing._merged)) {
+    const existing = hooks[key] // 获取组件已经存在的对应 hook
+    const toMerge = componentVNodeHooks[key] // 获取 componentVNodeHooks 上对应的 key
+    if (existing !== toMerge && !(existing && existing._merged)) { // 如果两个 hook 不同，并且已经挂载的 hook 没有进行合并，则进行相应的钩子合并
       hooks[key] = existing ? mergeHook(toMerge, existing) : toMerge
     }
   }
 }
 
+// 将两个钩子函数合并成一个钩子函数，并且标记合并完成
 function mergeHook (f1: any, f2: any): Function {
   const merged = (a, b) => {
     // flow complains about extra args which is why we use any

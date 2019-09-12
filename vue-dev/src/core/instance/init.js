@@ -34,7 +34,7 @@ export function initMixin (Vue: Class<Component>) {
     // merge options
     // 开始对传入的配置项进行合并处理，将相关的属性和方法放到 vue.$options
     if (options && options._isComponent) { // 传入的配置是一个组件实例
-      // 内部组件实例化优化
+      // 内部组件实例化
       // 因为动态配置合并是一个很慢的操作，并且内部组件的配置项不需要特殊处理
       initInternalComponent(vm, options)
     } else { // 普通配置型的合并操作
@@ -44,6 +44,7 @@ export function initMixin (Vue: Class<Component>) {
         vm
       )
     }
+
     /* istanbul ignore else */
     if (process.env.NODE_ENV !== 'production') {
       initProxy(vm)
@@ -74,31 +75,34 @@ export function initMixin (Vue: Class<Component>) {
       measure(`vue ${vm._name} init`, startTag, endTag)
     }
 
-    if (vm.$options.el) {
+    if (vm.$options.el) { // 组件是没有挂载容器 el，只有根组件才有 
       // $mount 会根据平台在 platforms 下对应的初始文件进行重写
       vm.$mount(vm.$options.el)
     }
   }
 }
 
+// 初始化内部组件
 export function initInternalComponent (vm: Component, options: InternalComponentOptions) {
   const opts = vm.$options = Object.create(vm.constructor.options)
   // doing this because it's faster than dynamic enumeration.
-  const parentVnode = options._parentVnode
-  opts.parent = options.parent
+  const parentVnode = options._parentVnode // 声明组件内容的父 vnode,即组件标签
+  opts.parent = options.parent // 声明组件的父 vue 实例
   opts._parentVnode = parentVnode
 
-  const vnodeComponentOptions = parentVnode.componentOptions
-  opts.propsData = vnodeComponentOptions.propsData
-  opts._parentListeners = vnodeComponentOptions.listeners
-  opts._renderChildren = vnodeComponentOptions.children
-  opts._componentTag = vnodeComponentOptions.tag
+  const vnodeComponentOptions = parentVnode.componentOptions // 获取组件 vnode 标签相关的属性，（eg:   { Ctor, propsData, listeners, tag, children }）
+  opts.propsData = vnodeComponentOptions.propsData // 获取 propsData
+  opts._parentListeners = vnodeComponentOptions.listeners // 获取注册了那些 DOM 事件
+  opts._renderChildren = vnodeComponentOptions.children // 有哪些 slot 内容
+  opts._componentTag = vnodeComponentOptions.tag // 组件标签名称
 
+  // 如果声明了相关的渲染函数，则使用相关的渲染函数
   if (options.render) {
     opts.render = options.render
     opts.staticRenderFns = options.staticRenderFns
   }
 }
+
 /**
  * 解析 Vue 构造函数上默认的 config， 并将其返回
  * 如果该构造函数是通过 vue.extend 扩展来的，则需要递归，收集所有的 option

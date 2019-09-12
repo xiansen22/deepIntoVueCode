@@ -16,6 +16,7 @@ const idToTemplate = cached(id => {
 
 // 初次定义是在 runtime/index
 const mount = Vue.prototype.$mount
+// 这里的 $mount 实现了 ast => 优化器 => 代码生成器 的三个过程，生成了相关的渲染函数
 Vue.prototype.$mount = function (
   el?: string | Element,
   hydrating?: boolean
@@ -37,9 +38,9 @@ Vue.prototype.$mount = function (
   if (!options.render) {
     // 获取 template
     let template = options.template
-    if (template) {
-      if (typeof template === 'string') {
-        if (template.charAt(0) === '#') {
+    if (template) { // 对于设置了模版，则解析模版内容
+      if (typeof template === 'string') { // 如果模版是一个字符串
+        if (template.charAt(0) === '#') { // 如果模版是以 # 开头的，则认为是一个 dom element,会获取 element 内的 html 内容
           template = idToTemplate(template)
           /* istanbul ignore if */
           if (process.env.NODE_ENV !== 'production' && !template) {
@@ -49,7 +50,7 @@ Vue.prototype.$mount = function (
             )
           }
         }
-      } else if (template.nodeType) {
+      } else if (template.nodeType) { // 如果模版是一个  element 节点，则直接获取其内容
         template = template.innerHTML
       } else {
         if (process.env.NODE_ENV !== 'production') {
@@ -61,6 +62,7 @@ Vue.prototype.$mount = function (
       // 如果没有设置 template ，则获取装载元素的 html 内容，包括装载元素节点
       template = getOuterHTML(el)
     }
+
     if (template) {
       /* istanbul ignore if */
       if (process.env.NODE_ENV !== 'production' && config.performance && mark) {

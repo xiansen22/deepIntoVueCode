@@ -228,19 +228,22 @@ export function createPatchFunction (backend) {
       insert(parentElm, vnode.elm, refElm)
     }
   }
-
+  
+  // 创建组件
   function createComponent (vnode, insertedVnodeQueue, parentElm, refElm) {
     let i = vnode.data
     // i 非 undefined
-    if (isDef(i)) {
+    if (isDef(i)) { // 组件的 data 一定非空，因为在 create-component 中生成占位 vnode 时，初始化了相关组件装载钩子函数
       const isReactivated = isDef(vnode.componentInstance) && i.keepAlive
-      if (isDef(i = i.hook) && isDef(i = i.init)) {
+      if (isDef(i = i.hook) && isDef(i = i.init)) { // 调用组件 init 钩子函数
         i(vnode, false /* hydrating */)
       }
       // after calling the init hook, if the vnode is a child component
       // it should've created a child instance and mounted it. the child
       // component also has set the placeholder vnode's elm.
       // in that case we can just return the element and be done.
+      // 在执行完 hook.init 后，如果此时 vnode 是一个子组件的，那么在 init 过程中会创建一个子组件实例并且挂载它。
+      // 此时，子组件也有自己的真实 elm
       if (isDef(vnode.componentInstance)) {
         initComponent(vnode, insertedVnodeQueue)
         insert(parentElm, vnode.elm, refElm)
@@ -251,13 +254,16 @@ export function createPatchFunction (backend) {
       }
     }
   }
-
+  
+  // 初始化组件，执行组件创建相关的钩子函数
   function initComponent (vnode, insertedVnodeQueue) {
     if (isDef(vnode.data.pendingInsert)) {
       insertedVnodeQueue.push.apply(insertedVnodeQueue, vnode.data.pendingInsert)
       vnode.data.pendingInsert = null
     }
-    vnode.elm = vnode.componentInstance.$el
+    // 将此时的组件标签的 elm 指向真正的组件内容元素
+    // 组件在初次挂载，执行 patch 完毕后,会将生成的 element 返回并挂载在 vm.$el 上
+    vnode.elm = vnode.componentInstance.$el  
     if (isPatchable(vnode)) {
       invokeCreateHooks(vnode, insertedVnodeQueue)
       setScope(vnode)
@@ -792,7 +798,7 @@ export function createPatchFunction (backend) {
     }
     let isInitialPatch = false
     const insertedVnodeQueue = []
-    if (isUndef(oldVnode)) { // 没有指定装载dom节点（比如组件），创建一个空的根元素节点
+    if (isUndef(oldVnode)) { // 组件的挂载初始化,没有指定装载dom节点（比如组件），创建一个空的根元素节点
       // empty mount (likely as component), create new root element
       isInitialPatch = true
       createElm(vnode, insertedVnodeQueue)

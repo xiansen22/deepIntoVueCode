@@ -513,6 +513,7 @@ export function processElement (
   for (let i = 0; i < transforms.length; i++) {
     element = transforms[i](element, options) || element
   }
+  // 处理 attrsList
   processAttrs(element)
   return element
 }
@@ -855,14 +856,14 @@ function processAttrs (el) {
   const list = el.attrsList
   let i, l, name, rawName, value, modifiers, syncGen, isDynamic
   for (i = 0, l = list.length; i < l; i++) {
-    name = rawName = list[i].name
-    value = list[i].value
+    name = rawName = list[i].name // 获取属性名称
+    value = list[i].value // 获取属性值
     // 检测节点是否使用了动态绑定
     if (dirRE.test(name)) {
       // mark element as dynamic
       // 标记节点为一个动态节点
       el.hasBindings = true
-      // modifiers
+      // modifiers 是否使用修饰符 click.stop 之类的
       modifiers = parseModifiers(name.replace(dirRE, ''))
       // support .foo shorthand syntax for the .prop modifier
       if (process.env.VBIND_PROP_SHORTHAND && propBindRE.test(name)) {
@@ -871,7 +872,7 @@ function processAttrs (el) {
       } else if (modifiers) {
         name = name.replace(modifierRE, '')
       }
-      if (bindRE.test(name)) { // v-bind
+      if (bindRE.test(name)) { // v-bind 处理 v-bind 类型的指令
         name = name.replace(bindRE, '')
         value = parseFilters(value)
         isDynamic = dynamicArgRE.test(name)
@@ -939,12 +940,15 @@ function processAttrs (el) {
         } else {
           addAttr(el, name, value, list[i], isDynamic)
         }
-      } else if (onRE.test(name)) { // v-on
+      } else if (onRE.test(name)) { // v-on 处理 v-on 类型的指令
+        // 取出 v- 或者 @ 前缀
         name = name.replace(onRE, '')
+        // 是否使用了动态参数，可以使用  @[eventName] 动态修改 eventName ,指定绑定时间
         isDynamic = dynamicArgRE.test(name)
-        if (isDynamic) {
+        if (isDynamic) { // 如果使用了动态参数则取出相应参数
           name = name.slice(1, -1)
         }
+        //
         addHandler(el, name, value, modifiers, false, warn, list[i], isDynamic)
       } else { // normal directives
         name = name.replace(dirRE, '')
