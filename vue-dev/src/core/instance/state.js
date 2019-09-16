@@ -219,7 +219,6 @@ function initComputed (vm: Component, computed: Object) {
         computedWatcherOptions
       )
     }
-
     // component-defined computed properties are already defined on the
     // component prototype. We only need to define computed properties defined
     // at instantiation here.

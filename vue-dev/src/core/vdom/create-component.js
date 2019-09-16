@@ -57,7 +57,7 @@ const componentVNodeHooks = {
     }
   },
   
-  // 子组件的更新，，主要是用来更新组件标签上的属性
+  // 子组件的更新，，主要是用来更新组件标签上的属性,更新相应的 props 可以触发相应的数据侦测，从而进行相应额 vnode 更新
   prepatch (oldVnode: MountedComponentVNode, vnode: MountedComponentVNode) {
     const options = vnode.componentOptions
     const child = vnode.componentInstance = oldVnode.componentInstance // 拿到子组件的实例
@@ -92,8 +92,8 @@ const componentVNodeHooks = {
 
   destroy (vnode: MountedComponentVNode) {
     const { componentInstance } = vnode
-    if (!componentInstance._isDestroyed) {
-      if (!vnode.data.keepAlive) {
+    if (!componentInstance._isDestroyed) { // 组件尚未被销毁
+      if (!vnode.data.keepAlive) { // 非持久组件
         componentInstance.$destroy()
       } else {
         deactivateChildComponent(componentInstance, true /* direct */)

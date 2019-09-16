@@ -100,7 +100,8 @@ export function lifecycleMixin (Vue: Class<Component>) {
       vm._watcher.update()
     }
   }
-
+  
+  // 注册销毁钩子函数
   Vue.prototype.$destroy = function () {
     const vm: Component = this
     if (vm._isBeingDestroyed) {
@@ -114,9 +115,11 @@ export function lifecycleMixin (Vue: Class<Component>) {
       remove(parent.$children, vm)
     }
     // teardown watchers
+    // 先销毁组件级别的 watcher 实例
     if (vm._watcher) {
       vm._watcher.teardown()
     }
+    // 然后销毁组件上的小 watcher 实例，比如 computed、watch 等相关属性
     let i = vm._watchers.length
     while (i--) {
       vm._watchers[i].teardown()
@@ -223,11 +226,11 @@ export function mountComponent (
 // 子组件的更新
 // 主要是对组件标签上使用的属性进行更新
 export function updateChildComponent (
-  vm: Component,
-  propsData: ?Object,
-  listeners: ?Object,
-  parentVnode: MountedComponentVNode,
-  renderChildren: ?Array<VNode>
+  vm: Component, // 子组件的实例
+  propsData: ?Object, // 更新后的 propsData
+  listeners: ?Object, // 更新后的 listeners
+  parentVnode: MountedComponentVNode, // 新的父组件
+  renderChildren: ?Array<VNode> // 新的子节点渲染
 ) {
   if (process.env.NODE_ENV !== 'production') {
     isUpdatingChildComponent = true
@@ -271,6 +274,7 @@ export function updateChildComponent (
   vm.$listeners = listeners || emptyObject
 
   // update props
+  // 更新 props　，因为 props 是进行 observe 后的数据，所以对 props  进行相应的更改，会触发相应的依赖更新
   if (propsData && vm.$options.props) {
     toggleObserving(false)
     const props = vm._props
@@ -278,7 +282,7 @@ export function updateChildComponent (
     for (let i = 0; i < propKeys.length; i++) {
       const key = propKeys[i]
       const propOptions: any = vm.$options.props // wtf flow?
-      props[key] = validateProp(key, propOptions, propsData, vm)
+      props[key] = validateProp(key, propOptions, propsData, vm) 
     }
     toggleObserving(true)
     // keep a copy of raw propsData

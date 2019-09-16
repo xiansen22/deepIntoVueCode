@@ -75,7 +75,7 @@ export function initMixin (Vue: Class<Component>) {
       measure(`vue ${vm._name} init`, startTag, endTag)
     }
 
-    if (vm.$options.el) { // 组件是没有挂载容器 el，只有根组件才有 
+    if (vm.$options.el) { // 组件是没有挂载容器 el，只有根组件才有 ，如果没有提供了 el ,那么这个实例处于未装载状态，需要手动进行装载
       // $mount 会根据平台在 platforms 下对应的初始文件进行重写
       vm.$mount(vm.$options.el)
     }

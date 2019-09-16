@@ -6,20 +6,23 @@
 //   })
 
 const Child = Vue.component('child', {
-  props: ['role', 'number'],
+  props: ['role', 'number', 'count'],
   data: function() {
     return {
-      count: 0
+      counta: 0
     }
   },
   template: `
-    <div>我是子组件 {{count}}</div>
+    <div id="child">我是子组件 {{count}}</div>
   `,
   created: function() {
-    console.log('我是子组件的 created');
+    console.log('我是子组件的 created', this.count);
   },
   mounted: function() {
 
+  },
+  beforeDestroy: function() {
+    
   }
 })
 
@@ -76,12 +79,11 @@ new Vue({
       console.log('i am beforeCreate');
     },
     mounted: function(){
-        console.log(this.list);
+        
     },
     methods: {
       add: function() {
         this.count += 1;
-        this.count = 10;
       }
     }
 })

@@ -53,7 +53,6 @@ export function generate (
 ): CodegenResult {
   const state = new CodegenState(options)
   const code = ast ? genElement(ast, state) : '_c("div")'
-  console.log(state.staticRenderFns)
   console.log(code);
   return {
     render: `with(this){return ${code}}`,
@@ -74,7 +73,7 @@ export function genElement (el: ASTElement, state: CodegenState): string {
     return genOnce(el, state)
   } else if (el.for && !el.forProcessed) {
     return genFor(el, state)
-  } else if (el.if && !el.ifProcessed) {
+  } else if (el.if && !el.ifProcessed) { // 根据条件属性 （v-if）生成相应的渲染函数
     return genIf(el, state)
   } else if (el.tag === 'template' && !el.slotTarget && !state.pre) {
     return genChildren(el, state) || 'void 0'
@@ -152,13 +151,14 @@ function genOnce (el: ASTElement, state: CodegenState): string {
   }
 }
 
+// 生成条件语句的渲染函数
 export function genIf (
   el: any,
   state: CodegenState,
   altGen?: Function,
   altEmpty?: string
 ): string {
-  el.ifProcessed = true // avoid recursion
+  el.ifProcessed = true // avoid recursion 标记已被处理，避免被递归
   return genIfConditions(el.ifConditions.slice(), state, altGen, altEmpty)
 }
 
@@ -171,13 +171,14 @@ function genIfConditions (
   if (!conditions.length) {
     return altEmpty || '_e()'
   }
-
-  const condition = conditions.shift()
-  if (condition.exp) {
+  
+  // 按照顺序取出一个条件语句
+  const condition = conditions.shift() 
+  if (condition.exp) { // 根据相应的条件生成
     return `(${condition.exp})?${
-      genTernaryExp(condition.block)
+      genTernaryExp(condition.block) //  condition.block 里面是当前条件语句下对于的 ast node
     }:${
-      genIfConditions(conditions, state, altGen, altEmpty)
+      genIfConditions(conditions, state, altGen, altEmpty) // 一般来说这里是生成一个空节点
     }`
   } else {
     return `${genTernaryExp(condition.block)}`
