@@ -517,8 +517,8 @@ export function createPatchFunction (backend) {
         if (isUndef(oldKeyToIdx)) oldKeyToIdx = createKeyToOldIdx(oldCh, oldStartIdx, oldEndIdx)
         // 判断当前遍历的 vnode 是否存在与 oldvnode tree
         idxInOld = isDef(newStartVnode.key)
-          ? oldKeyToIdx[newStartVnode.key]
-          : findIdxInOld(newStartVnode, oldCh, oldStartIdx, oldEndIdx)
+          ? oldKeyToIdx[newStartVnode.key] // 如果有 key 属性，则直接从 map 中取出
+          : findIdxInOld(newStartVnode, oldCh, oldStartIdx, oldEndIdx) // 没有 key 则直接按照当前遍历的范围从 oldvnode 中遍历获取
         // 如果当前遍历的节点，不存在 oldvnode tree 上那么这个节点是一个新的节点
         if (isUndef(idxInOld)) { // New element
           // 为 vnode 创建真正元素节点，并且根据相应位置插入 dom tree 中
